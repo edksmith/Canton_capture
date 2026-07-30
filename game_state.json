@@ -1,7 +1,7 @@
 {
   "game_status": "setup",
   "day": 1,
-  "time": "09:00",
+  "time": "13:59",
   "public_board": [
     "ZH",
     "AR",
@@ -16,7 +16,14 @@
         "GR"
       ],
       "private_cards": [
-        "SZ"
+        {
+          "slot_id": "B1",
+          "status": "available",
+          "reveal_at": {
+            "day": 1,
+            "time": "09:00"
+          }
+        }
       ]
     },
     "red": {
@@ -25,7 +32,14 @@
         "SG"
       ],
       "private_cards": [
-        "VS"
+        {
+          "slot_id": "R1",
+          "status": "available",
+          "reveal_at": {
+            "day": 1,
+            "time": "09:00"
+          }
+        }
       ]
     }
   },
