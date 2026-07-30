@@ -132,6 +132,20 @@ Current Public Board
 
 <div id="board" class="board"></div>
 
+<h2>Game Status</h2>
+
+<div id="status"></div>
+
+
+<h2>Territories</h2>
+
+<div id="territories"></div>
+
+
+<h2>Recent Claims</h2>
+
+<div id="claims"></div>
+
 
 
 <div id="challengeBox" class="challenge-box">
@@ -214,6 +228,12 @@ console.log("Game state loaded:", gameState);
 
 
 displayBoard();
+
+displayStatus();
+
+displayTeams();
+
+displayClaims();
 
 }
 
@@ -334,7 +354,114 @@ function openChallenge(cantonID){
 
 }
 
+function displayStatus(){
 
+    document.getElementById("status").innerHTML = `
+        <p>
+        Day ${gameState.day}
+        |
+        ${gameState.time}
+        </p>
+
+        <p>
+        ${gameState.game_status}
+        </p>
+    `;
+}
+
+function calculateScore(claimed){
+
+    let score = 0;
+
+    claimed.forEach(cantonID => {
+
+        let canton = cantons.find(
+            c => c.canton_id === cantonID
+        );
+
+
+        let connected = claimed.some(
+            other =>
+            canton.neighbors.includes(other)
+        );
+
+
+        if(connected){
+            score += 2;
+        }
+        else{
+            score += 1;
+        }
+
+    });
+
+    return score;
+}
+
+
+function displayTeams(){
+
+    let blue =
+    gameState.teams.blue;
+
+
+    let red =
+    gameState.teams.red;
+
+
+    document.getElementById("territories").innerHTML = `
+
+    <h3>🔵 ${blue.name}</h3>
+
+    <p>
+    Claimed:
+    ${blue.claimed.join(", ")}
+    </p>
+
+    <p>
+    Score:
+    ${calculateScore(blue.claimed)}
+    </p>
+
+
+    <h3>🔴 ${red.name}</h3>
+
+    <p>
+    Claimed:
+    ${red.claimed.join(", ")}
+    </p>
+
+    <p>
+    Score:
+    ${calculateScore(red.claimed)}
+    </p>
+
+    `;
+
+}
+
+function displayClaims(){
+
+    let html = "";
+
+    gameState.claim_log.forEach(
+        claim => {
+
+        html += `
+        <p>
+        ${claim.time}:
+        ${claim.team}
+        claimed
+        ${claim.canton}
+        </p>
+        `;
+
+    });
+
+
+    document.getElementById("claims").innerHTML = html;
+
+}    
 
 function showInstructions(){
 
