@@ -1,0 +1,324 @@
+[
+  {
+    "canton_id": "AG",
+    "name": "Aargau",
+    "population": 725000,
+    "area_km2": 1404,
+    "neighbors": [
+      "BE",
+      "BL",
+      "LU",
+      "SO",
+      "ZG",
+      "ZH"
+    ]
+  },
+  {
+    "canton_id": "AI",
+    "name": "Appenzell Innerrhoden",
+    "population": 16000,
+    "area_km2": 173,
+    "neighbors": [
+      "AR",
+      "SG"
+    ]
+  },
+  {
+    "canton_id": "AR",
+    "name": "Appenzell Ausserrhoden",
+    "population": 56000,
+    "area_km2": 243,
+    "neighbors": [
+      "AI",
+      "SG"
+    ]
+  },
+  {
+    "canton_id": "BE",
+    "name": "Bern",
+    "population": 1050000,
+    "area_km2": 5959,
+    "neighbors": [
+      "AG",
+      "FR",
+      "JU",
+      "LU",
+      "NE",
+      "NW",
+      "OW",
+      "SO",
+      "UR",
+      "VD",
+      "VS"
+    ]
+  },
+  {
+    "canton_id": "BL",
+    "name": "Basel-Landschaft",
+    "population": 300000,
+    "area_km2": 518,
+    "neighbors": [
+      "AG",
+      "BS",
+      "JU",
+      "SO"
+    ]
+  },
+  {
+    "canton_id": "BS",
+    "name": "Basel-Stadt",
+    "population": 205000,
+    "area_km2": 37,
+    "neighbors": [
+      "BL"
+    ]
+  },
+  {
+    "canton_id": "FR",
+    "name": "Fribourg",
+    "population": 330000,
+    "area_km2": 1671,
+    "neighbors": [
+      "BE",
+      "NE",
+      "VD"
+    ]
+  },
+  {
+    "canton_id": "GE",
+    "name": "Geneva",
+    "population": 530000,
+    "area_km2": 282,
+    "neighbors": [
+      "VD"
+    ]
+  },
+  {
+    "canton_id": "GL",
+    "name": "Glarus",
+    "population": 41000,
+    "area_km2": 685,
+    "neighbors": [
+      "GR",
+      "SG",
+      "SZ",
+      "UR"
+    ]
+  },
+  {
+    "canton_id": "GR",
+    "name": "Graubünden",
+    "population": 200000,
+    "area_km2": 7105,
+    "neighbors": [
+      "GL",
+      "SG",
+      "TI",
+      "UR"
+    ]
+  },
+  {
+    "canton_id": "JU",
+    "name": "Jura",
+    "population": 74000,
+    "area_km2": 839,
+    "neighbors": [
+      "BE",
+      "BL",
+      "NE",
+      "SO"
+    ]
+  },
+  {
+    "canton_id": "LU",
+    "name": "Lucerne",
+    "population": 420000,
+    "area_km2": 1494,
+    "neighbors": [
+      "AG",
+      "BE",
+      "NW",
+      "OW",
+      "SZ",
+      "ZG"
+    ]
+  },
+  {
+    "canton_id": "NE",
+    "name": "Neuchâtel",
+    "population": 180000,
+    "area_km2": 803,
+    "neighbors": [
+      "BE",
+      "FR",
+      "JU",
+      "VD"
+    ]
+  },
+  {
+    "canton_id": "NW",
+    "name": "Nidwalden",
+    "population": 45000,
+    "area_km2": 276,
+    "neighbors": [
+      "BE",
+      "LU",
+      "OW",
+      "SZ",
+      "UR"
+    ]
+  },
+  {
+    "canton_id": "OW",
+    "name": "Obwalden",
+    "population": 38000,
+    "area_km2": 491,
+    "neighbors": [
+      "BE",
+      "LU",
+      "NW",
+      "UR"
+    ]
+  },
+  {
+    "canton_id": "SG",
+    "name": "St. Gallen",
+    "population": 530000,
+    "area_km2": 2026,
+    "neighbors": [
+      "AI",
+      "AR",
+      "GL",
+      "GR",
+      "SZ",
+      "TG",
+      "ZH"
+    ]
+  },
+  {
+    "canton_id": "SH",
+    "name": "Schaffhausen",
+    "population": 85000,
+    "area_km2": 298,
+    "neighbors": [
+      "TG",
+      "ZH"
+    ]
+  },
+  {
+    "canton_id": "SZ",
+    "name": "Schwyz",
+    "population": 165000,
+    "area_km2": 908,
+    "neighbors": [
+      "GL",
+      "LU",
+      "NW",
+      "SG",
+      "UR",
+      "ZG",
+      "ZH"
+    ]
+  },
+  {
+    "canton_id": "SO",
+    "name": "Solothurn",
+    "population": 280000,
+    "area_km2": 791,
+    "neighbors": [
+      "AG",
+      "BE",
+      "BL",
+      "JU"
+    ]
+  },
+  {
+    "canton_id": "TG",
+    "name": "Thurgau",
+    "population": 285000,
+    "area_km2": 991,
+    "neighbors": [
+      "SG",
+      "SH",
+      "ZH"
+    ]
+  },
+  {
+    "canton_id": "TI",
+    "name": "Ticino",
+    "population": 355000,
+    "area_km2": 2812,
+    "neighbors": [
+      "GR",
+      "UR",
+      "VS"
+    ]
+  },
+  {
+    "canton_id": "UR",
+    "name": "Uri",
+    "population": 37000,
+    "area_km2": 1077,
+    "neighbors": [
+      "BE",
+      "GL",
+      "GR",
+      "NW",
+      "OW",
+      "SZ",
+      "TI",
+      "VS"
+    ]
+  },
+  {
+    "canton_id": "VD",
+    "name": "Vaud",
+    "population": 830000,
+    "area_km2": 3212,
+    "neighbors": [
+      "BE",
+      "FR",
+      "GE",
+      "NE",
+      "VS"
+    ]
+  },
+  {
+    "canton_id": "VS",
+    "name": "Valais",
+    "population": 350000,
+    "area_km2": 5224,
+    "neighbors": [
+      "BE",
+      "TI",
+      "UR",
+      "VD"
+    ]
+  },
+  {
+    "canton_id": "ZG",
+    "name": "Zug",
+    "population": 130000,
+    "area_km2": 239,
+    "neighbors": [
+      "AG",
+      "LU",
+      "SZ",
+      "ZH"
+    ]
+  },
+  {
+    "canton_id": "ZH",
+    "name": "Zürich",
+    "population": 1600000,
+    "area_km2": 1729,
+    "neighbors": [
+      "AG",
+      "SG",
+      "SH",
+      "SZ",
+      "TG",
+      "ZG"
+    ]
+  }
+]

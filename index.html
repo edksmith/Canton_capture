@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>
+Jet Lag: Swiss Canton Scramble
+</title>
+
+
+<style>
+
+body {
+    font-family: Arial, sans-serif;
+    background:#f4f4f4;
+    margin:0;
+    padding:20px;
+}
+
+
+.container {
+    max-width:900px;
+    margin:auto;
+}
+
+
+h1 {
+    text-align:center;
+}
+
+
+.board {
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+}
+
+
+.canton-card {
+
+    background:white;
+    border-radius:12px;
+    padding:20px;
+
+    width:160px;
+
+    text-align:center;
+
+    cursor:pointer;
+
+    box-shadow:
+    0 2px 6px rgba(0,0,0,0.15);
+
+}
+
+
+.canton-card:hover {
+
+    transform:scale(1.05);
+
+}
+
+
+.challenge-box {
+
+    margin-top:30px;
+
+    background:white;
+
+    padding:25px;
+
+    border-radius:12px;
+
+    display:none;
+
+}
+
+
+.instructions {
+
+    margin-top:15px;
+
+    background:#eeeeee;
+
+    padding:15px;
+
+    border-radius:8px;
+
+    white-space:pre-line;
+
+}
+
+
+
+button {
+
+    padding:10px;
+
+    border-radius:6px;
+
+    border:none;
+
+    cursor:pointer;
+
+}
+
+
+</style>
+
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<h1>
+🇨🇭 Jet Lag: Swiss Canton Scramble
+</h1>
+
+
+<h2>
+Current Public Board
+</h2>
+
+
+<div id="board" class="board"></div>
+
+
+
+<div id="challengeBox" class="challenge-box">
+
+
+<h2 id="challengeTitle"></h2>
+
+<h3 id="challengeCanton"></h3>
+
+
+<p id="challengeDescription"></p>
+
+
+<button onclick="showInstructions()">
+Show Instructions
+</button>
+
+
+<div id="instructions" class="instructions" style="display:none">
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+
+<script>
+
+
+let cantons = [];
+
+let challenges = [];
+
+
+
+// Temporary board for testing
+let publicBoard = [
+    "BE",
+    "ZH",
+    "VS",
+    "GR"
+];
+
+
+
+
+// Load JSON files
+
+async function loadGameData(){
+
+
+    const cantonResponse =
+        await fetch("cantons.json");
+
+
+    cantons =
+        await cantonResponse.json();
+
+
+
+    const challengeResponse =
+        await fetch("challenges.json");
+
+
+    challenges =
+        await challengeResponse.json();
+
+
+
+    console.log("Cantons loaded:", cantons);
+
+    console.log("Challenges loaded:", challenges);
+
+
+
+    displayBoard();
+
+}
+
+
+
+
+
+function displayBoard(){
+
+
+    const board =
+        document.getElementById("board");
+
+
+    board.innerHTML="";
+
+
+    publicBoard.forEach(id=>{
+
+
+        const canton =
+            cantons.find(
+                c=>c.canton_id===id
+            );
+
+
+
+        const card =
+            document.createElement("div");
+
+
+        card.className="canton-card";
+
+
+        card.innerHTML =
+        `
+        <h3>${canton.name}</h3>
+        <p>${canton.canton_id}</p>
+        `;
+
+
+
+        card.onclick =
+            ()=>openChallenge(id);
+
+
+
+        board.appendChild(card);
+
+
+
+    });
+
+
+
+}
+
+
+
+
+function openChallenge(cantonID){
+
+
+    const challenge =
+        challenges.find(
+            c=>c.canton_id===cantonID
+        );
+
+
+
+    const canton =
+        cantons.find(
+            c=>c.canton_id===cantonID
+        );
+
+
+
+    document
+    .getElementById("challengeBox")
+    .style.display="block";
+
+
+
+    document
+    .getElementById("challengeTitle")
+    .innerHTML =
+        challenge.title;
+
+
+
+    document
+    .getElementById("challengeCanton")
+    .innerHTML =
+        canton.name;
+
+
+
+    document
+    .getElementById("challengeDescription")
+    .innerHTML =
+        challenge.description;
+
+
+
+    document
+    .getElementById("instructions")
+    .innerHTML =
+        challenge.instructions;
+
+
+
+    document
+    .getElementById("instructions")
+    .style.display="none";
+
+
+
+}
+
+
+
+function showInstructions(){
+
+
+    const box =
+        document.getElementById("instructions");
+
+
+    if(box.style.display==="none"){
+
+        box.style.display="block";
+
+    }
+
+    else {
+
+        box.style.display="none";
+
+    }
+
+
+}
+
+
+
+
+loadGameData();
+
+
+</script>
+
+
+</body>
+
+</html>
