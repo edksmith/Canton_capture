@@ -398,6 +398,7 @@
   "use strict";
 
   const BACKEND_URL_KEY = "cantonScrambleBackendUrlV1";
+  const DEFAULT_BACKEND_URL = "https://script.google.com/macros/s/AKfycbz_CviXKdLSe87FpW8N785eYlngA9FmTGfnreJBB9_AByVV1pRLNCqkCKebmoHLpALZJQ/exec";
   const TEAM_IDS = ["blue", "red"];
 
   let cantons = [];
@@ -416,7 +417,9 @@
   }
 
   function nowTime() {
-    return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+    const now = new Date();
+    return String(now.getHours()).padStart(2, "0") + ":" +
+      String(now.getMinutes()).padStart(2, "0");
   }
 
   function showMessage(text) {
@@ -614,31 +617,52 @@
   function normalizeState(raw) {
     const normalized = clone(raw || {});
     normalized.format_version = Number(normalized.format_version || 2);
-    normalized.game_status = normalized.game_status || "setup";
+    normalized.game_status = String(normalized.game_status || "setup");
     normalized.day = Number(normalized.day || 1);
-    normalized.time = normalized.time || "09:00";
-    normalized.public_board = Array.isArray(normalized.public_board) ? normalized.public_board : [];
+    normalized.time = String(normalized.time || "09:00");
+    normalized.public_board = Array.isArray(normalized.public_board)
+      ? normalized.public_board.map(String)
+      : [];
     normalized.teams = normalized.teams || {};
 
     for (const teamId of TEAM_IDS) {
       const prefix = teamId === "blue" ? "B" : "R";
       const team = normalized.teams[teamId] || {};
-      team.name = team.name || (teamId === "blue" ? "Blue Team" : "Red Team");
-      team.claimed = Array.isArray(team.claimed) ? team.claimed : [];
+      team.name = String(team.name || (teamId === "blue" ? "Blue Team" : "Red Team"));
+      team.claimed = Array.isArray(team.claimed) ? team.claimed.map(String) : [];
+
       const cards = Array.isArray(team.private_cards) ? team.private_cards : [];
-      team.private_cards = cards.map((card, index) => ({
-        slot_id: card.slot_id || `${prefix}${index + 1}`,
-        canton_id: card.canton_id || null,
-        status: card.status || "available",
-        reveal_at: card.reveal_at || privateRevealSchedule(index)
-      }));
+      team.private_cards = cards.map((card, index) => {
+        const reveal = card.reveal_at || privateRevealSchedule(index);
+        return {
+          slot_id: String(card.slot_id || `${prefix}${index + 1}`),
+          canton_id: card.canton_id ? String(card.canton_id) : null,
+          status: String(card.status || "available"),
+          reveal_at: {
+            day: Number(reveal.day || 1),
+            time: String(reveal.time || "09:00")
+          }
+        };
+      });
+
       normalized.teams[teamId] = team;
     }
 
-    normalized.claim_log = Array.isArray(normalized.claim_log) ? normalized.claim_log : [];
+    // Match the backend's canonical representation. In particular, metadata
+    // log entries use empty strings rather than null for team and canton.
+    normalized.claim_log = Array.isArray(normalized.claim_log)
+      ? normalized.claim_log.map(entry => ({
+          team: entry.team == null ? "" : String(entry.team),
+          canton: entry.canton == null ? "" : String(entry.canton),
+          time: String(entry.time || normalized.time),
+          action: entry.action == null ? "" : String(entry.action),
+          type: entry.type == null ? "" : String(entry.type)
+        }))
+      : [];
+
     normalized.board_locked = Boolean(normalized.board_locked);
     normalized.refresh = normalized.refresh || {};
-    normalized.refresh.phase = normalized.refresh.phase || "idle";
+    normalized.refresh.phase = String(normalized.refresh.phase || "idle");
     normalized.refresh.claiming_team = normalized.refresh.claiming_team || null;
     normalized.refresh.non_claiming_team = normalized.refresh.non_claiming_team || null;
     normalized.refresh.first_selection = normalized.refresh.first_selection || null;
@@ -1136,12 +1160,12 @@
       bindEvents();
       [cantons, challenges] = await Promise.all([fetchJson("cantons.json"), fetchJson("challenges.json")]);
       validateData();
-      const savedUrl = localStorage.getItem(BACKEND_URL_KEY) || "";
+      const savedUrl =
+        localStorage.getItem(BACKEND_URL_KEY) ||
+        DEFAULT_BACKEND_URL;
+
       $("backendUrl").value = savedUrl;
-      if (!savedUrl) {
-        setConnectionStatus("", "Paste the deployed Apps Script URL to connect.");
-        return;
-      }
+      localStorage.setItem(BACKEND_URL_KEY, savedUrl);
       setBusy(true, "Loading backend state…");
       await loadBackendState({ quiet: true });
       showMessage("Live Game Master state loaded from the backend.");
