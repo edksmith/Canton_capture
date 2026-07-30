@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blue Team — Swiss Canton Scramble</title>
+
   <style>
     :root {
       --bg: #f3f4f6;
@@ -13,48 +14,270 @@
       --border: #d1d5db;
       --team: #1677d2;
       --team-soft: #eff6ff;
+      --success: #166534;
       --danger: #991b1b;
       --locked: #f3f4f6;
       --locked-border: #9ca3af;
     }
+
     * { box-sizing: border-box; }
-    body { margin: 0; background: var(--bg); color: var(--text); font-family: Arial, Helvetica, sans-serif; }
-    .container { width: min(920px, calc(100% - 24px)); margin: 0 auto; padding: 22px 0 44px; }
-    header { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 5px solid var(--team); }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .container {
+      width: min(920px, calc(100% - 24px));
+      margin: 0 auto;
+      padding: 22px 0 44px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 5px solid var(--team);
+    }
+
     h1, h2, h3 { margin-top: 0; }
     h1 { margin-bottom: 4px; }
     .subtitle { margin: 0; color: var(--muted); }
-    .toolbar, .action-row { display: flex; gap: 9px; flex-wrap: wrap; }
-    .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 16px; }
-    .notice { border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 14px; background: white; }
-    .notice.error { border-color: #fca5a5; background: #fef2f2; white-space: pre-wrap; }
-    .notice.success { border-color: #86efac; background: #f0fdf4; }
+
+    .toolbar {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .notice {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 14px;
+      background: white;
+    }
+
+    .notice.error {
+      border-color: #fca5a5;
+      background: #fef2f2;
+      color: var(--danger);
+      white-space: pre-wrap;
+    }
+
+    .notice.success {
+      border-color: #86efac;
+      background: #f0fdf4;
+      color: var(--success);
+    }
+
+    .notice.warning {
+      border-color: #fde68a;
+      background: #fffbeb;
+      color: #854d0e;
+    }
+
     .hidden { display: none !important; }
-    button, .button-link { border: 0; border-radius: 9px; padding: 10px 13px; cursor: pointer; background: var(--team); color: white; font: inherit; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
-    button.secondary, .button-link.secondary { background: #e5e7eb; color: var(--text); }
-    .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
-    .summary-item { border: 1px solid var(--border); border-radius: 11px; padding: 12px; background: var(--team-soft); }
-    .summary-label { color: var(--muted); font-size: 0.9rem; }
-    .summary-value { font-size: 1.25rem; font-weight: 800; margin-top: 4px; }
-    .card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-    details.private-card { border: 1px solid var(--border); border-top: 5px solid var(--team); border-radius: 12px; background: white; overflow: hidden; }
-    details.private-card[open] { background: var(--team-soft); }
-    details.private-card.locked { border-top-color: var(--locked-border); background: var(--locked); }
-    details.private-card summary { list-style: none; cursor: pointer; padding: 15px; display: flex; justify-content: space-between; align-items: center; gap: 10px; font-weight: 800; }
-    details.private-card.locked summary { cursor: default; color: var(--muted); }
-    details.private-card summary::-webkit-details-marker { display: none; }
-    .status-badge { border-radius: 999px; padding: 5px 8px; background: #e5e7eb; font-size: 0.82rem; font-weight: 700; }
-    .card-content { border-top: 1px solid var(--border); padding: 15px; }
-    .canton-name { font-size: 1.25rem; font-weight: 800; margin-bottom: 8px; }
-    .challenge-title { font-size: 1.05rem; font-weight: 800; margin: 14px 0 7px; }
-    .instructions { white-space: pre-line; background: white; border: 1px solid var(--border); border-radius: 9px; padding: 12px; margin-top: 10px; }
-    .public-board { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
-    .public-card { border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: white; }
-    .small { color: var(--muted); font-size: 0.9rem; }
-    @media (max-width: 700px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .public-board, .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 460px) { .summary-grid, .public-board, .card-grid { grid-template-columns: 1fr; } .toolbar > *, .action-row > * { flex: 1; } }
+
+    button,
+    .button-link {
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 13px;
+      cursor: pointer;
+      background: var(--team);
+      color: white;
+      font: inherit;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button.secondary,
+    .button-link.secondary {
+      background: #e5e7eb;
+      color: var(--text);
+    }
+
+    .connection {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .connection.connected { color: var(--success); }
+    .connection.error { color: var(--danger); }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .summary-item {
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 12px;
+      background: var(--team-soft);
+    }
+
+    .summary-label {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .summary-value {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-top: 4px;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    details.private-card {
+      border: 1px solid var(--border);
+      border-top: 5px solid var(--team);
+      border-radius: 12px;
+      background: white;
+      overflow: hidden;
+    }
+
+    details.private-card[open] {
+      background: var(--team-soft);
+    }
+
+    details.private-card.locked {
+      border-top-color: var(--locked-border);
+      background: var(--locked);
+    }
+
+    details.private-card.claimed {
+      opacity: 0.82;
+    }
+
+    details.private-card summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+    }
+
+    details.private-card.locked summary {
+      cursor: default;
+      color: var(--muted);
+    }
+
+    details.private-card summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .status-badge {
+      border-radius: 999px;
+      padding: 5px 8px;
+      background: #e5e7eb;
+      font-size: 0.82rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .card-content {
+      border-top: 1px solid var(--border);
+      padding: 15px;
+    }
+
+    .canton-name {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .challenge-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      margin: 14px 0 7px;
+    }
+
+    .instructions {
+      white-space: pre-line;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+
+    .public-board {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .public-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      background: white;
+    }
+
+    .public-card strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 700px) {
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .public-board,
+      .card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 460px) {
+      .summary-grid,
+      .public-board,
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar > * {
+        flex: 1;
+      }
+    }
   </style>
 </head>
+
 <body>
   <div class="container">
     <header>
@@ -62,30 +285,61 @@
         <h1>🔵 <span id="teamHeading">Blue Team</span></h1>
         <p class="subtitle">Private Canton Cards</p>
       </div>
+
       <div class="toolbar">
         <a class="button-link secondary" href="index.html">Open Public View</a>
-        <button id="refreshButton" type="button">Refresh Game State</button>
+        <button id="refreshButton" type="button">Refresh Now</button>
         <button id="hideAllButton" class="secondary" type="button">Hide All Cards</button>
       </div>
     </header>
 
+    <p id="connectionStatus" class="connection">Connecting to live game…</p>
+
     <div id="errorBox" class="notice error hidden"></div>
     <div id="messageBox" class="notice success hidden"></div>
+    <div id="boardLockNotice" class="notice warning hidden">
+      The public board is temporarily locked while a refresh is being resolved.
+    </div>
 
     <section class="panel">
       <h2>Your Game Summary</h2>
+
       <div class="summary-grid">
-        <div class="summary-item"><div class="summary-label">Game time</div><div id="gameClock" class="summary-value">—</div></div>
-        <div class="summary-item"><div class="summary-label">Private slots</div><div id="privateCount" class="summary-value">0</div></div>
-        <div class="summary-item"><div class="summary-label">Claimed cantons</div><div id="claimedCount" class="summary-value">0</div></div>
-        <div class="summary-item"><div class="summary-label">Current score</div><div id="teamScore" class="summary-value">0</div></div>
+        <div class="summary-item">
+          <div class="summary-label">Game time</div>
+          <div id="gameClock" class="summary-value">—</div>
+        </div>
+
+        <div class="summary-item">
+          <div class="summary-label">Private slots</div>
+          <div id="privateCount" class="summary-value">0</div>
+        </div>
+
+        <div class="summary-item">
+          <div class="summary-label">Claimed cantons</div>
+          <div id="claimedCount" class="summary-value">0</div>
+        </div>
+
+        <div class="summary-item">
+          <div class="summary-label">Current score</div>
+          <div id="teamScore" class="summary-value">0</div>
+        </div>
       </div>
-      <p id="fileStatus" class="small" style="margin-bottom:0; margin-top:12px;">Loading private cards…</p>
+
+      <p id="stateStatus" class="small" style="margin-bottom:0; margin-top:12px;">
+        Loading live team state…
+      </p>
     </section>
 
     <section class="panel">
       <h2>Your Private Cards</h2>
-      <p class="small">Cards unlock according to the official day and time shown in <strong>game_state.json</strong>. To claim one, tell the Game Master the slot label (for example, B1) and reveal the canton after your proof is accepted.</p>
+
+      <p class="small">
+        Cards unlock according to the official game day and time. To claim one,
+        tell the Game Master the slot label, such as B1, and reveal
+        the canton after your proof is accepted.
+      </p>
+
       <div id="privateCards" class="card-grid"></div>
     </section>
 
@@ -100,14 +354,17 @@
   "use strict";
 
   const TEAM_ID = "blue";
-  const PRIVATE_FILE = "private_blue.json";
+  const TEAM_FALLBACK_NAME = "Blue Team";
+  const BACKEND_URL = "https://script.google.com/macros/s/AKfycbz_CviXKdLSe87FpW8N785eYlngA9FmTGfnreJBB9_AByVV1pRLNCqkCKebmoHLpALZJQ/exec";
+  const AUTO_REFRESH_MS = 20000;
 
   let cantons = [];
   let challenges = [];
   let publicState = null;
-  let privateState = null;
+  let teamState = null;
+  let refreshInProgress = false;
 
-  const $ = (id) => document.getElementById(id);
+  const $ = id => document.getElementById(id);
 
   function showError(error) {
     const box = $("errorBox");
@@ -115,91 +372,171 @@
     box.classList.remove("hidden");
   }
 
-  function hideError() { $("errorBox").classList.add("hidden"); }
+  function hideError() {
+    $("errorBox").classList.add("hidden");
+  }
 
   function showMessage(text) {
     const box = $("messageBox");
     box.textContent = text;
     box.classList.remove("hidden");
-    window.setTimeout(() => box.classList.add("hidden"), 2500);
+
+    window.setTimeout(() => {
+      box.classList.add("hidden");
+    }, 2500);
+  }
+
+  function setConnectionStatus(message, type = "") {
+    const box = $("connectionStatus");
+    box.textContent = message;
+    box.className = "connection";
+
+    if (type) {
+      box.classList.add(type);
+    }
+  }
+
+  function jsonpRequest(action, extraParams = {}) {
+    return new Promise((resolve, reject) => {
+      const callbackName =
+        "__cantonTeamCallback_" +
+        Date.now() +
+        "_" +
+        Math.random().toString(36).slice(2);
+
+      const script = document.createElement("script");
+      const url = new URL(BACKEND_URL);
+
+      url.searchParams.set("action", action);
+      url.searchParams.set("prefix", callbackName);
+      url.searchParams.set("_", Date.now());
+
+      Object.entries(extraParams).forEach(([key, value]) => {
+        url.searchParams.set(key, value);
+      });
+
+      let timeoutId;
+
+      function cleanup() {
+        clearTimeout(timeoutId);
+        delete window[callbackName];
+        script.remove();
+      }
+
+      window[callbackName] = response => {
+        cleanup();
+        resolve(response);
+      };
+
+      script.onerror = () => {
+        cleanup();
+        reject(new Error("The live backend could not be reached."));
+      };
+
+      timeoutId = window.setTimeout(() => {
+        cleanup();
+        reject(new Error("The live backend did not respond in time."));
+      }, 15000);
+
+      script.src = url.toString();
+      document.body.appendChild(script);
+    });
   }
 
   async function fetchJson(path) {
-    const response = await fetch(`${path}?v=${Date.now()}`, { cache: "no-store" });
-    if (!response.ok) throw new Error(`Could not load ${path} (HTTP ${response.status}). Make sure it is uploaded beside this HTML file.`);
-    try { return await response.json(); }
-    catch (error) { throw new Error(`${path} is not valid JSON: ${error.message}`); }
+    const response = await fetch(`${path}?v=${Date.now()}`, {
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Could not load ${path} (HTTP ${response.status}).`
+      );
+    }
+
+    try {
+      return await response.json();
+    } catch (error) {
+      throw new Error(`${path} is not valid JSON: ${error.message}`);
+    }
   }
 
-  function validatePrivateState(raw) {
-    if (!raw || typeof raw !== "object") throw new Error(`${PRIVATE_FILE} is not a valid private-card file.`);
-    if (raw.team_id !== TEAM_ID) throw new Error(`${PRIVATE_FILE} contains data for ${raw.team_id || "another team"}.`);
-    if (!Array.isArray(raw.cards)) throw new Error(`${PRIVATE_FILE} does not contain a cards list.`);
-    return {
-      format_version: raw.format_version || 2,
-      team_id: raw.team_id,
-      team_name: raw.team_name || "Blue Team",
-      generated_at: raw.generated_at || null,
-      cards: raw.cards.map((card, index) => ({
-        slot_id: String(card.slot_id || "B" + (index + 1)),
-        canton_id: String(card.canton_id || ""),
-        status: card.status || "available",
-        reveal_at: card.reveal_at || defaultRevealAt(index)
-      }))
-    };
+  async function loadReferenceData() {
+    [cantons, challenges] = await Promise.all([
+      fetchJson("cantons.json"),
+      fetchJson("challenges.json")
+    ]);
   }
 
-  function defaultRevealAt(index) {
-    return [
-      { day: 1, time: "09:00" },
-      { day: 1, time: "14:00" },
-      { day: 2, time: "09:00" }
-    ][index] || { day: 2, time: "09:00" };
+  function cantonById(id) {
+    return cantons.find(canton => canton.canton_id === id) || null;
   }
 
-  function cantonById(id) { return cantons.find(canton => canton.canton_id === id); }
-  function challengeById(id) { return challenges.find(challenge => challenge.canton_id === id); }
-  function displayName(id) { return cantonById(id)?.name || id; }
+  function challengeById(id) {
+    return challenges.find(challenge => challenge.canton_id === id) || null;
+  }
+
+  function displayName(id) {
+    return cantonById(id)?.name || id;
+  }
 
   function calculateScore(claimed) {
+    if (!Array.isArray(claimed)) return 0;
+
     return claimed.reduce((score, cantonId) => {
       const canton = cantonById(cantonId);
-      if (!canton) return score;
-      const connected = claimed.some(other => other !== cantonId && canton.neighbors.includes(other));
+
+      if (!canton || !Array.isArray(canton.neighbors)) {
+        return score + 1;
+      }
+
+      const connected = claimed.some(
+        other =>
+          other !== cantonId &&
+          canton.neighbors.includes(other)
+      );
+
       return score + (connected ? 2 : 1);
     }, 0);
   }
 
-  function timeToMinutes(value) {
-    const [hours, minutes] = String(value || "00:00").split(":").map(Number);
-    return (hours || 0) * 60 + (minutes || 0);
-  }
-
-  function isUnlocked(card) {
-    if (card.status === "claimed") return true;
-    const reveal = card.reveal_at || { day: 1, time: "09:00" };
-    const currentDay = Number(publicState?.day || 1);
-    const revealDay = Number(reveal.day || 1);
-    if (currentDay > revealDay) return true;
-    if (currentDay < revealDay) return false;
-    return timeToMinutes(publicState?.time || "00:00") >= timeToMinutes(reveal.time || "00:00");
-  }
-
   function revealLabel(card) {
-    const reveal = card.reveal_at || { day: 1, time: "09:00" };
+    const reveal = card.reveal_at || {
+      day: 1,
+      time: "09:00"
+    };
+
     return `Day ${reveal.day} at ${reveal.time}`;
   }
 
   function renderHeaderAndStatus() {
-    $("teamHeading").textContent = privateState?.team_name || publicState?.teams?.[TEAM_ID]?.name || "Blue Team";
-    $("gameClock").textContent = `Day ${publicState?.day || "—"} | ${publicState?.time || "—"}`;
-    const dateText = privateState?.generated_at ? new Date(privateState.generated_at).toLocaleString() : "unknown time";
-    $("fileStatus").textContent = `Loaded ${privateState?.cards?.length || 0} private slots from ${PRIVATE_FILE}. Generated ${dateText}.`;
+    const teamName =
+      teamState?.team_name ||
+      publicState?.teams?.[TEAM_ID]?.name ||
+      TEAM_FALLBACK_NAME;
+
+    $("teamHeading").textContent = teamName;
+    $("gameClock").textContent =
+      `Day ${publicState?.day ?? "—"} | ${publicState?.time ?? "—"}`;
+
+    const cards = Array.isArray(teamState?.cards)
+      ? teamState.cards
+      : [];
+
+    $("stateStatus").textContent =
+      `Live backend loaded ${cards.length} private slots. ` +
+      `Game status: ${publicState?.game_status || "unknown"}.`;
   }
 
   function renderSummary() {
-    const cards = privateState?.cards || [];
-    const claimed = publicState?.teams?.[TEAM_ID]?.claimed || [];
+    const cards = Array.isArray(teamState?.cards)
+      ? teamState.cards
+      : [];
+
+    const claimed = Array.isArray(publicState?.teams?.[TEAM_ID]?.claimed)
+      ? publicState.teams[TEAM_ID].claimed
+      : [];
+
     $("privateCount").textContent = String(cards.length);
     $("claimedCount").textContent = String(claimed.length);
     $("teamScore").textContent = String(calculateScore(claimed));
@@ -208,52 +545,98 @@
   function renderPrivateCards() {
     const wrapper = $("privateCards");
     wrapper.innerHTML = "";
-    if (!privateState?.cards?.length) {
-      wrapper.innerHTML = `<p class="small">No private cards were found in ${PRIVATE_FILE}.</p>`;
+
+    const cards = Array.isArray(teamState?.cards)
+      ? teamState.cards
+      : [];
+
+    if (!cards.length) {
+      wrapper.innerHTML =
+        '<p class="small">No private cards have been assigned yet.</p>';
       return;
     }
 
-    for (const card of privateState.cards) {
-      const unlocked = isUnlocked(card);
+    for (const card of cards) {
+      const unlocked = Boolean(card.unlocked || card.status === "claimed");
       const details = document.createElement("details");
-      details.className = `private-card${unlocked ? "" : " locked"}`;
+
+      details.className =
+        "private-card" +
+        (unlocked ? "" : " locked") +
+        (card.status === "claimed" ? " claimed" : "");
 
       const summary = document.createElement("summary");
       const slot = document.createElement("span");
-      slot.textContent = unlocked ? `${card.slot_id} — Reveal card` : `${card.slot_id} — Locked`;
       const badge = document.createElement("span");
+
       badge.className = "status-badge";
-      badge.textContent = card.status === "claimed" ? "claimed" : (unlocked ? "available" : revealLabel(card));
+
+      if (card.status === "claimed") {
+        slot.textContent = `${card.slot_id} — Claimed`;
+        badge.textContent = "claimed";
+      } else if (unlocked) {
+        slot.textContent = `${card.slot_id} — Reveal card`;
+        badge.textContent = "available";
+      } else {
+        slot.textContent = `${card.slot_id} — Locked`;
+        badge.textContent = revealLabel(card);
+      }
+
       summary.append(slot, badge);
       details.appendChild(summary);
 
       if (!unlocked) {
-        details.addEventListener("toggle", () => { if (details.open) details.open = false; });
+        details.addEventListener("toggle", () => {
+          if (details.open) {
+            details.open = false;
+          }
+        });
+
+        wrapper.appendChild(details);
+        continue;
+      }
+
+      if (!card.canton_id) {
+        const content = document.createElement("div");
+        content.className = "card-content";
+        content.textContent =
+          "This card is unlocked, but its canton could not be loaded.";
+        details.appendChild(content);
         wrapper.appendChild(details);
         continue;
       }
 
       const canton = cantonById(card.canton_id);
       const challenge = challengeById(card.canton_id);
+
       const content = document.createElement("div");
       content.className = "card-content";
 
       const cantonName = document.createElement("div");
       cantonName.className = "canton-name";
-      cantonName.textContent = `${canton?.name || card.canton_id} (${card.canton_id})`;
+      cantonName.textContent =
+        `${canton?.name || card.canton_id} (${card.canton_id})`;
 
       const challengeTitle = document.createElement("div");
       challengeTitle.className = "challenge-title";
-      challengeTitle.textContent = challenge?.title || "Challenge unavailable";
+      challengeTitle.textContent =
+        challenge?.title || "Challenge unavailable";
 
       const description = document.createElement("p");
       description.textContent = challenge?.description || "";
 
       const instructions = document.createElement("div");
       instructions.className = "instructions";
-      instructions.textContent = challenge?.instructions || "No instructions found.";
+      instructions.textContent =
+        challenge?.instructions || "No instructions found.";
 
-      content.append(cantonName, challengeTitle, description, instructions);
+      content.append(
+        cantonName,
+        challengeTitle,
+        description,
+        instructions
+      );
+
       details.appendChild(content);
       wrapper.appendChild(details);
     }
@@ -262,62 +645,125 @@
   function renderPublicBoard() {
     const wrapper = $("publicBoard");
     wrapper.innerHTML = "";
-    const board = publicState?.public_board || [];
+
+    const board = Array.isArray(publicState?.public_board)
+      ? publicState.public_board
+      : [];
+
+    $("boardLockNotice").classList.toggle(
+      "hidden",
+      !publicState?.board_locked
+    );
+
     if (!board.length) {
-      wrapper.innerHTML = '<p class="small">No public cards are currently available.</p>';
+      wrapper.innerHTML =
+        '<p class="small">No public-board cards have been drawn yet.</p>';
       return;
     }
+
     for (const id of board) {
       const card = document.createElement("div");
       card.className = "public-card";
-      const name = document.createElement("strong");
-      name.textContent = displayName(id);
-      const code = document.createElement("div");
-      code.className = "small";
-      code.textContent = id;
-      card.append(name, code);
+      card.innerHTML =
+        `<strong>${displayName(id)}</strong><span class="small">${id}</span>`;
       wrapper.appendChild(card);
     }
   }
 
+  function hideAllCards() {
+    document
+      .querySelectorAll("details.private-card")
+      .forEach(card => {
+        card.open = false;
+      });
+
+    showMessage("All private cards hidden.");
+  }
+
   function renderAll() {
-    hideError();
     renderHeaderAndStatus();
     renderSummary();
     renderPrivateCards();
     renderPublicBoard();
   }
 
-  function hideAllCards() {
-    document.querySelectorAll("details.private-card[open]").forEach(details => { details.open = false; });
-  }
+  async function refreshTeamState(showSuccessMessage = false) {
+    if (refreshInProgress) return;
+    refreshInProgress = true;
 
-  async function refreshData(showConfirmation = true) {
     try {
       hideError();
-      [cantons, challenges, publicState, privateState] = await Promise.all([
-        fetchJson("cantons.json"),
-        fetchJson("challenges.json"),
-        fetchJson("game_state.json"),
-        fetchJson(PRIVATE_FILE)
-      ]);
-      privateState = validatePrivateState(privateState);
+
+      const response = await jsonpRequest("teamState", {
+        team: TEAM_ID
+      });
+
+      if (!response || !response.ok || !response.state) {
+        throw new Error(
+          response?.error ||
+          "The backend returned an invalid team state."
+        );
+      }
+
+      publicState = response.state.public_state;
+      teamState = response.state.team;
+
+      if (!publicState || !teamState) {
+        throw new Error(
+          "The backend team response is missing required game data."
+        );
+      }
+
       renderAll();
-      if (showConfirmation) showMessage("Game state refreshed.");
+
+      const updated = new Date();
+      setConnectionStatus(
+        "Live backend connected · updated " +
+        updated.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        }),
+        "connected"
+      );
+
+      if (showSuccessMessage) {
+        showMessage("Live game state refreshed.");
+      }
     } catch (error) {
+      console.error(error);
+      setConnectionStatus("Live backend connection failed", "error");
+      showError(error);
+    } finally {
+      refreshInProgress = false;
+    }
+  }
+
+  async function initialize() {
+    try {
+      await loadReferenceData();
+      await refreshTeamState();
+
+      window.setInterval(
+        () => refreshTeamState(false),
+        AUTO_REFRESH_MS
+      );
+    } catch (error) {
+      console.error(error);
+      setConnectionStatus("Page could not load", "error");
       showError(error);
     }
   }
 
-  function bindEvents() {
-    $("refreshButton").addEventListener("click", () => refreshData(true));
-    $("hideAllButton").addEventListener("click", hideAllCards);
-  }
+  $("refreshButton").addEventListener("click", () => {
+    refreshTeamState(true);
+  });
 
-  bindEvents();
-  refreshData(false);
-  window.setInterval(() => refreshData(false), 30000);
+  $("hideAllButton").addEventListener("click", hideAllCards);
+
+  initialize();
 })();
 </script>
+
 </body>
 </html>
