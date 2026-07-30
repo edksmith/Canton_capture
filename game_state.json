@@ -1,67 +1,123 @@
 {
-  "game_status": "testing",
+  "game_status": "setup",
   "day": 1,
-  "time": "12:30",
+  "time": "09:00",
   "public_board": [
-    "FR",
-    "TI",
-    "SH",
-    "LU"
+    "ZH",
+    "AR",
+    "TG",
+    "SH"
   ],
   "teams": {
     "blue": {
       "name": "Blue Team",
       "claimed": [
-        "BE",
-        "SO",
-        "AG"
+        "VD",
+        "GR"
       ],
       "private_cards": [
-        "UR"
+        "SZ"
       ]
     },
     "red": {
       "name": "Red Team",
       "claimed": [
-        "ZH",
-        "ZG",
-        "AI"
+        "SG"
       ],
       "private_cards": [
-        "VD"
+        "VS"
       ]
     }
   },
   "claim_log": [
     {
-      "team": "blue",
-      "canton": "BE",
-      "time": "09:45"
-    },
-    {
-      "team": "red",
-      "canton": "ZH",
-      "time": "10:10"
+      "team": null,
+      "canton": null,
+      "time": "09:00",
+      "action": "started a new game and dealt the initial public board",
+      "type": "setup"
     },
     {
       "team": "blue",
-      "canton": "SO",
-      "time": "10:55"
+      "canton": "VD",
+      "time": "09:00",
+      "action": "claimed Vaud from the public board",
+      "type": "public_claim"
     },
     {
-      "team": "red",
-      "canton": "ZG",
-      "time": "11:20"
+      "team": null,
+      "canton": "SH",
+      "time": "09:00",
+      "action": "Schaffhausen was drawn as the automatic replacement",
+      "type": "board_draw"
     },
     {
       "team": "blue",
       "canton": "AG",
-      "time": "11:50"
+      "time": "09:00",
+      "action": "Aargau was refreshed; Zürich was drawn",
+      "type": "board_refresh"
     },
     {
       "team": "red",
-      "canton": "AI",
-      "time": "12:15"
+      "canton": "SG",
+      "time": "09:00",
+      "action": "claimed St. Gallen from the public board",
+      "type": "public_claim"
+    },
+    {
+      "team": null,
+      "canton": "AR",
+      "time": "09:00",
+      "action": "Appenzell Ausserrhoden was drawn as the automatic replacement",
+      "type": "board_draw"
+    },
+    {
+      "team": "blue",
+      "canton": "AR",
+      "time": "09:00",
+      "action": "vetoed the removal of Appenzell Ausserrhoden",
+      "type": "veto"
+    },
+    {
+      "team": "red",
+      "canton": "SH",
+      "time": "09:00",
+      "action": "Schaffhausen was refreshed after a veto; Thurgau was drawn",
+      "type": "board_refresh"
+    },
+    {
+      "team": "blue",
+      "canton": "GR",
+      "time": "09:00",
+      "action": "claimed Graubünden from the public board",
+      "type": "public_claim"
+    },
+    {
+      "team": null,
+      "canton": "ZG",
+      "time": "09:00",
+      "action": "Zug was drawn as the automatic replacement",
+      "type": "board_draw"
+    },
+    {
+      "team": "blue",
+      "canton": "ZG",
+      "time": "09:00",
+      "action": "Zug was refreshed; Schaffhausen was drawn",
+      "type": "board_refresh"
     }
-  ]
+  ],
+  "board_locked": false,
+  "refresh": {
+    "phase": "idle",
+    "claiming_team": null,
+    "non_claiming_team": null,
+    "first_selection": null,
+    "vetoed_canton": null
+  },
+  "settings": {
+    "board_size": 4,
+    "team_count": 2
+  }
 }
