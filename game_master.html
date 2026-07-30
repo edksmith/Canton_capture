@@ -268,7 +268,7 @@
     <header>
       <div>
         <h1>🎛️ Canton Scramble — Game Master</h1>
-        <p class="subtitle">Static prototype: changes are saved in this browser. Export the JSON and upload it to GitHub to update the public page.</p>
+        <p class="subtitle">Two-team static prototype. Private canton identities are hidden from the dashboard and retained only in this browser's internal save.</p>
       </div>
       <div class="toolbar">
         <a class="button-link secondary" href="index.html" target="_blank" rel="noopener">Open Public View</a>
@@ -359,14 +359,19 @@
         <hr style="border:0;border-top:1px solid #d1d5db;margin:20px 0;">
 
         <h3>Private claim</h3>
+        <p class="small">The claiming team tells the Game Master its anonymous slot (for example, B1 or R2) and reveals the canton only after the challenge has been verified.</p>
         <div class="form-grid">
           <div>
             <label for="privateClaimTeam">Claiming team</label>
             <select id="privateClaimTeam"></select>
           </div>
           <div>
-            <label for="privateClaimCanton">Private canton</label>
-            <select id="privateClaimCanton"></select>
+            <label for="privateClaimSlot">Private card slot</label>
+            <select id="privateClaimSlot"></select>
+          </div>
+          <div>
+            <label for="privateRevealCanton">Revealed canton</label>
+            <select id="privateRevealCanton"></select>
           </div>
         </div>
         <div class="action-row">
@@ -392,8 +397,8 @@
       </section>
 
       <section class="panel span-6">
-        <h2>Private Cards</h2>
-        <p class="small">Private cards remain hidden from the public page. Use the draw buttons at the scheduled times.</p>
+        <h2>Anonymous Private Slots</h2>
+        <p class="small">This dashboard shows only slot labels and status. Canton identities are deliberately hidden from the Game Master interface. Use the draw buttons at the scheduled times.</p>
         <div id="privateHands" class="team-grid"></div>
       </section>
 
@@ -404,7 +409,7 @@
 
       <section class="panel span-12">
         <h2>State Tools</h2>
-        <p class="small">The editor cannot directly overwrite a file in your GitHub repository. Download the state after making changes, then replace <strong>game_state.json</strong> in GitHub. The public page will update after deployment/cache refresh.</p>
+        <p class="small">The downloaded public state deliberately omits private canton identities. The hidden mappings remain only in this browser's local Game Master save. Download the state after making public changes, then replace <strong>game_state.json</strong> in GitHub.</p>
         <div class="action-row">
           <button id="copyJsonButton" class="secondary" type="button">Copy JSON</button>
           <button id="exportButtonBottom" type="button">Download JSON</button>
@@ -484,7 +489,23 @@
       const team = normalized.teams[teamId];
       team.name = team.name || (teamId === "blue" ? "Blue Team" : "Red Team");
       team.claimed = Array.isArray(team.claimed) ? team.claimed : [];
-      team.private_cards = Array.isArray(team.private_cards) ? team.private_cards : [];
+
+      const prefix = teamId === "blue" ? "B" : "R";
+      const rawCards = Array.isArray(team.private_cards) ? team.private_cards : [];
+      team.private_cards = rawCards.map((card, index) => {
+        if (typeof card === "string") {
+          return {
+            slot_id: `${prefix}${index + 1}`,
+            canton_id: card,
+            status: "available"
+          };
+        }
+        return {
+          slot_id: card.slot_id || `${prefix}${index + 1}`,
+          canton_id: card.canton_id || null,
+          status: card.status || "available"
+        };
+      });
     }
 
     normalized.claim_log = Array.isArray(normalized.claim_log) ? normalized.claim_log : [];
@@ -575,7 +596,43 @@
   }
 
   function allPrivateIds() {
-    return teamIds().flatMap(id => state.teams[id].private_cards);
+    return teamIds().flatMap(id =>
+      state.teams[id].private_cards
+        .filter(card => card.status === "available" && card.canton_id)
+        .map(card => card.canton_id)
+    );
+  }
+
+  function nextPrivateSlotId(teamId) {
+    const prefix = teamId === "blue" ? "B" : "R";
+    const cards = state.teams[teamId].private_cards;
+    let number = 1;
+    while (cards.some(card => card.slot_id === `${prefix}${number}`)) number += 1;
+    return `${prefix}${number}`;
+  }
+
+  function publicExportState() {
+    const exported = clone(state);
+    for (const teamId of teamIds()) {
+      exported.teams[teamId].private_cards = exported.teams[teamId].private_cards.map(card => ({
+        slot_id: card.slot_id,
+        status: card.status
+      }));
+    }
+    return exported;
+  }
+
+  function preservePrivateMappings(nextState, currentState) {
+    if (!currentState) return nextState;
+    for (const teamId of teamIds()) {
+      const currentCards = currentState.teams?.[teamId]?.private_cards || [];
+      const mapping = new Map(currentCards.map(card => [card.slot_id, card.canton_id || null]));
+      nextState.teams[teamId].private_cards = nextState.teams[teamId].private_cards.map(card => ({
+        ...card,
+        canton_id: card.canton_id || mapping.get(card.slot_id) || null
+      }));
+    }
+    return nextState;
   }
 
   function eligibleDrawPool() {
@@ -697,12 +754,23 @@
 
   function updatePrivateClaimOptions() {
     const teamId = $("privateClaimTeam").value || "blue";
-    const hand = state.teams[teamId]?.private_cards || [];
+    const hand = (state.teams[teamId]?.private_cards || []).filter(card => card.status === "available");
+
     fillSelect(
-      $("privateClaimCanton"),
-      hand.map(id => ({ value: id, label: `${displayName(id)} (${id})` })),
-      hand.length ? "Choose a private canton" : "No private cards"
+      $("privateClaimSlot"),
+      hand.map(card => ({ value: card.slot_id, label: `${card.slot_id} — available` })),
+      hand.length ? "Choose a private slot" : "No available private cards"
     );
+
+    const unclaimed = cantons
+      .map(canton => canton.canton_id)
+      .filter(id => !allClaimedIds().includes(id));
+    fillSelect(
+      $("privateRevealCanton"),
+      unclaimed.map(id => ({ value: id, label: `${displayName(id)} (${id})` })),
+      "Choose the revealed canton"
+    );
+
     $("privateClaimButton").disabled = state.board_locked || !hand.length;
   }
 
@@ -717,10 +785,10 @@
         <h3>${id === "blue" ? "🔵" : "🔴"} ${team.name}</h3>
         <div class="pill-list">
           ${team.private_cards.length
-            ? team.private_cards.map(card => `<span class="pill">${displayName(card)} (${card})</span>`).join("")
-            : '<span class="small">No private cards</span>'}
+            ? team.private_cards.map(card => `<span class="pill">${card.slot_id} — ${card.status}</span>`).join("")
+            : '<span class="small">No private cards drawn</span>'}
         </div>
-        <button type="button" class="${id}" data-draw-team="${id}">Draw Private Card</button>
+        <button type="button" class="${id}" data-draw-team="${id}">Draw Anonymous Private Card</button>
       `;
       wrapper.appendChild(section);
     }
@@ -792,7 +860,7 @@
   }
 
   function renderJsonPreview() {
-    $("jsonPreview").value = JSON.stringify(state, null, 2);
+    $("jsonPreview").value = JSON.stringify(publicExportState(), null, 2);
   }
 
   function renderAll() {
@@ -843,10 +911,16 @@
       settings: { board_size: boardSize, team_count: 2 }
     });
 
-    // Deal one private canton to each team first.
+    // Deal one anonymous private canton to each team first.
     for (const teamId of teamIds()) {
       const drawn = drawRandomCanton();
-      if (drawn) state.teams[teamId].private_cards.push(drawn);
+      if (drawn) {
+        state.teams[teamId].private_cards.push({
+          slot_id: nextPrivateSlotId(teamId),
+          canton_id: drawn,
+          status: "available"
+        });
+      }
     }
 
     // Then draw the initial public board from the remaining eligible pool.
@@ -872,10 +946,15 @@
       return;
     }
     snapshot();
-    state.teams[teamId].private_cards.push(drawn);
-    logAction(teamId, drawn, `drew a private canton card`, "private_draw");
+    const slotId = nextPrivateSlotId(teamId);
+    state.teams[teamId].private_cards.push({
+      slot_id: slotId,
+      canton_id: drawn,
+      status: "available"
+    });
+    logAction(teamId, null, `drew anonymous private card ${slotId}`, "private_draw");
     persist();
-    showMessage(`${state.teams[teamId].name} drew ${displayName(drawn)}.`);
+    showMessage(`${state.teams[teamId].name} drew ${slotId}. Its canton remains hidden on this dashboard.`);
   }
 
   function confirmPublicClaim() {
@@ -919,11 +998,23 @@
       showError("Complete the board refresh before recording another claim.");
       return;
     }
+
     const teamId = $("privateClaimTeam").value;
-    const cantonId = $("privateClaimCanton").value;
+    const slotId = $("privateClaimSlot").value;
+    const cantonId = $("privateRevealCanton").value;
     const hand = state.teams[teamId]?.private_cards || [];
-    if (!teamId || !cantonId || !hand.includes(cantonId)) {
-      showError("Choose a valid private card belonging to that team.");
+    const card = hand.find(item => item.slot_id === slotId && item.status === "available");
+
+    if (!teamId || !slotId || !cantonId || !card) {
+      showError("Choose a valid team, available private slot, and revealed canton.");
+      return;
+    }
+    if (!card.canton_id) {
+      showError("This browser does not have the hidden identity for that slot. Use the browser that originally dealt the private card.");
+      return;
+    }
+    if (card.canton_id !== cantonId) {
+      showError("The revealed canton does not match that private slot. Check the slot label with the claiming team.");
       return;
     }
     if (allClaimedIds().includes(cantonId)) {
@@ -932,11 +1023,11 @@
     }
 
     snapshot();
-    state.teams[teamId].private_cards = hand.filter(id => id !== cantonId);
+    card.status = "claimed";
     state.teams[teamId].claimed.push(cantonId);
-    logAction(teamId, cantonId, `claimed ${displayName(cantonId)} using a private card`, "private_claim");
+    logAction(teamId, cantonId, `claimed ${displayName(cantonId)} using private card ${slotId}`, "private_claim");
     persist();
-    showMessage(`${displayName(cantonId)} recorded as a private claim. The public board did not change.`);
+    showMessage(`${displayName(cantonId)} recorded as a private claim from ${slotId}. The public board did not change.`);
   }
 
   function selectedRefreshChoice() {
@@ -1019,15 +1110,15 @@
   }
 
   function reloadLoadedState() {
-    if (!window.confirm("Discard browser changes and reload the current GitHub game_state.json?")) return;
+    if (!window.confirm("Reload the current GitHub game_state.json? Public changes will be replaced, but hidden private-card mappings from this browser will be preserved where slot labels match.")) return;
     snapshot();
-    state = normalizeState(loadedState);
+    state = preservePrivateMappings(normalizeState(loadedState), state);
     persist();
-    showMessage("Reloaded the state originally fetched from GitHub.");
+    showMessage("Reloaded the GitHub state and preserved matching hidden private-card mappings.");
   }
 
   function exportJson() {
-    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(publicExportState(), null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -1039,7 +1130,7 @@
   }
 
   async function copyJson() {
-    const text = JSON.stringify(state, null, 2);
+    const text = JSON.stringify(publicExportState(), null, 2);
     try {
       await navigator.clipboard.writeText(text);
       showMessage("JSON copied to the clipboard.");
