@@ -1,45 +1,30 @@
 {
-  "game_status": "active",
+  "game_status": "setup",
   "day": 1,
-  "time": "10:45",
-  "last_update": "Game started",
+  "time": "09:00",
 
   "public_board": [
     "BE",
     "ZH",
-    "VS",
-    "GR"
+    "AI",
+    "ZG"
   ],
 
   "teams": {
     "blue": {
       "name": "Blue Team",
-      "claimed": [
-    "BE",
-    "SO",
-    "ZH"
-],
-      "private_cards": [
-        "TI"
-      ]
+      "claimed": [],
+      "private_cards": []
     },
 
     "red": {
       "name": "Red Team",
-      "claimed": [
-        "ZH"
-      ],
-      "private_cards": [
-        "UR"
-      ]
+      "claimed": [],
+      "private_cards": []
     }
   },
 
-  "claim_log": [
-    {
-      "team": "blue",
-      "canton": "BE",
-      "time": "10:30"
-    }
+  "claim_log": []
+}
   ]
 }
