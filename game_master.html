@@ -268,7 +268,7 @@
     <header>
       <div>
         <h1>🎛️ Canton Scramble — Game Master</h1>
-        <p class="subtitle">Two-team static prototype. Private canton identities are hidden from the dashboard and retained only in this browser's internal save.</p>
+        <p class="subtitle">Two-team static prototype. All six private cards are selected at setup; their identities stay hidden from this dashboard.</p>
       </div>
       <div class="toolbar">
         <a class="button-link secondary" href="index.html" target="_blank" rel="noopener">Open Public View</a>
@@ -398,13 +398,13 @@
 
       <section class="panel span-6">
         <h2>Anonymous Private Slots</h2>
-        <p class="small">This dashboard shows only slot labels and status. Canton identities are deliberately hidden from the Game Master interface. Use the draw buttons at the scheduled times.</p>
+        <p class="small">All three slots for each team are selected when a new game is created. This dashboard shows only slot labels and whether each slot is locked, available, or claimed.</p>
         <div id="privateHands" class="team-grid"></div>
         <div class="action-row">
-          <button id="exportBluePrivateButton" class="blue" type="button">Download Blue Private File</button>
-          <button id="exportRedPrivateButton" class="red" type="button">Download Red Private File</button>
+          <button id="exportBluePrivateButton" class="blue" type="button">Download private_blue.json</button>
+          <button id="exportRedPrivateButton" class="red" type="button">Download private_red.json</button>
         </div>
-        <p class="small" style="margin-top:10px;">Send each downloaded file only to that team. The file contains the canton identities for that team's anonymous slots.</p>
+        <p class="small" style="margin-top:10px;">Upload both files beside the team pages once before the game. Each team page automatically loads only its own file and unlocks B1/R1, B2/R2, and B3/R3 at the scheduled game times.</p>
       </section>
 
       <section class="panel span-6">
@@ -502,13 +502,15 @@
           return {
             slot_id: `${prefix}${index + 1}`,
             canton_id: card,
-            status: "available"
+            status: "available",
+            reveal_at: privateRevealSchedule(index)
           };
         }
         return {
           slot_id: card.slot_id || `${prefix}${index + 1}`,
           canton_id: card.canton_id || null,
-          status: card.status || "available"
+          status: card.status || "available",
+          reveal_at: card.reveal_at || privateRevealSchedule(index)
         };
       });
     }
@@ -526,6 +528,33 @@
     normalized.settings.board_size = Number(normalized.settings.board_size || 4);
     normalized.settings.team_count = 2;
     return normalized;
+  }
+
+  function privateRevealSchedule(index) {
+    return [
+      { day: 1, time: "09:00" },
+      { day: 1, time: "14:00" },
+      { day: 2, time: "09:00" }
+    ][index] || { day: 2, time: "09:00" };
+  }
+
+  function timeToMinutes(value) {
+    const [hours, minutes] = String(value || "00:00").split(":").map(Number);
+    return (hours || 0) * 60 + (minutes || 0);
+  }
+
+  function isPrivateCardUnlocked(card) {
+    if (card.status === "claimed") return true;
+    const reveal = card.reveal_at || { day: 1, time: "09:00" };
+    if (Number(state.day) > Number(reveal.day)) return true;
+    if (Number(state.day) < Number(reveal.day)) return false;
+    return timeToMinutes(state.time) >= timeToMinutes(reveal.time);
+  }
+
+  function privateCardDisplayStatus(card) {
+    if (card.status === "claimed") return "claimed";
+    if (isPrivateCardUnlocked(card)) return "available";
+    return `locked until Day ${card.reveal_at.day} at ${card.reveal_at.time}`;
   }
 
   function validateData() {
@@ -603,7 +632,7 @@
   function allPrivateIds() {
     return teamIds().flatMap(id =>
       state.teams[id].private_cards
-        .filter(card => card.status === "available" && card.canton_id)
+        .filter(card => card.canton_id)
         .map(card => card.canton_id)
     );
   }
@@ -621,7 +650,8 @@
     for (const teamId of teamIds()) {
       exported.teams[teamId].private_cards = exported.teams[teamId].private_cards.map(card => ({
         slot_id: card.slot_id,
-        status: card.status
+        status: card.status,
+        reveal_at: card.reveal_at
       }));
     }
     return exported;
@@ -637,14 +667,15 @@
     }
 
     return {
-      format_version: 1,
+      format_version: 2,
       team_id: teamId,
       team_name: team.name,
       generated_at: new Date().toISOString(),
       cards: team.private_cards.map(card => ({
         slot_id: card.slot_id,
         canton_id: card.canton_id,
-        status: card.status
+        status: card.status,
+        reveal_at: card.reveal_at
       }))
     };
   }
@@ -781,7 +812,7 @@
 
   function updatePrivateClaimOptions() {
     const teamId = $("privateClaimTeam").value || "blue";
-    const hand = (state.teams[teamId]?.private_cards || []).filter(card => card.status === "available");
+    const hand = (state.teams[teamId]?.private_cards || []).filter(card => card.status === "available" && isPrivateCardUnlocked(card));
 
     fillSelect(
       $("privateClaimSlot"),
@@ -812,17 +843,12 @@
         <h3>${id === "blue" ? "🔵" : "🔴"} ${team.name}</h3>
         <div class="pill-list">
           ${team.private_cards.length
-            ? team.private_cards.map(card => `<span class="pill">${card.slot_id} — ${card.status}</span>`).join("")
-            : '<span class="small">No private cards drawn</span>'}
+            ? team.private_cards.map(card => `<span class="pill">${card.slot_id} — ${privateCardDisplayStatus(card)}</span>`).join("")
+            : '<span class="small">No private cards assigned</span>'}
         </div>
-        <button type="button" class="${id}" data-draw-team="${id}">Draw Anonymous Private Card</button>
       `;
       wrapper.appendChild(section);
     }
-
-    wrapper.querySelectorAll("[data-draw-team]").forEach(button => {
-      button.addEventListener("click", () => drawPrivateCard(button.dataset.drawTeam));
-    });
   }
 
   function renderLog() {
@@ -916,7 +942,7 @@
   }
 
   function startNewGame() {
-    if (!window.confirm("Start a completely new two-team game? This replaces the current browser state.")) return;
+    if (!window.confirm("Start a completely new two-team game? This replaces the current browser state and preselects all six private cards.")) return;
     snapshot();
 
     const boardSize = Math.max(1, Math.min(8, Number($("boardSize").value || 4)));
@@ -938,50 +964,31 @@
       settings: { board_size: boardSize, team_count: 2 }
     });
 
-    // Deal one anonymous private canton to each team first.
+    // Preselect all three private cards for each team before drawing the public board.
     for (const teamId of teamIds()) {
-      const drawn = drawRandomCanton();
-      if (drawn) {
+      for (let index = 0; index < 3; index += 1) {
+        const drawn = drawRandomCanton();
+        if (!drawn) break;
+        const prefix = teamId === "blue" ? "B" : "R";
         state.teams[teamId].private_cards.push({
-          slot_id: nextPrivateSlotId(teamId),
+          slot_id: `${prefix}${index + 1}`,
           canton_id: drawn,
-          status: "available"
+          status: "available",
+          reveal_at: privateRevealSchedule(index)
         });
       }
     }
 
-    // Then draw the initial public board from the remaining eligible pool.
+    // Draw the initial public board from the remaining eligible pool.
     while (state.public_board.length < boardSize) {
       const drawn = drawRandomCanton();
       if (!drawn) break;
       state.public_board.push(drawn);
     }
 
-    logAction(null, null, "started a new game and dealt the initial public board", "setup");
+    logAction(null, null, "started a new game, preselected six private cards, and dealt the initial public board", "setup");
     persist();
-    showMessage("New game created. Each team received one private card.");
-  }
-
-  function drawPrivateCard(teamId) {
-    if (state.board_locked) {
-      showError("Complete the board refresh before drawing another private card.");
-      return;
-    }
-    const drawn = drawRandomCanton();
-    if (!drawn) {
-      showError("No eligible canton remains for a private-card draw.");
-      return;
-    }
-    snapshot();
-    const slotId = nextPrivateSlotId(teamId);
-    state.teams[teamId].private_cards.push({
-      slot_id: slotId,
-      canton_id: drawn,
-      status: "available"
-    });
-    logAction(teamId, null, `drew anonymous private card ${slotId}`, "private_draw");
-    persist();
-    showMessage(`${state.teams[teamId].name} drew ${slotId}. Its canton remains hidden on this dashboard.`);
+    showMessage("New game created. B1/R1 are available now; B2/R2 and B3/R3 will unlock at their scheduled times.");
   }
 
   function confirmPublicClaim() {
@@ -1030,10 +1037,10 @@
     const slotId = $("privateClaimSlot").value;
     const cantonId = $("privateRevealCanton").value;
     const hand = state.teams[teamId]?.private_cards || [];
-    const card = hand.find(item => item.slot_id === slotId && item.status === "available");
+    const card = hand.find(item => item.slot_id === slotId && item.status === "available" && isPrivateCardUnlocked(item));
 
     if (!teamId || !slotId || !cantonId || !card) {
-      showError("Choose a valid team, available private slot, and revealed canton.");
+      showError("Choose a valid team, currently unlocked private slot, and revealed canton.");
       return;
     }
     if (!card.canton_id) {
@@ -1163,7 +1170,7 @@
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${teamId}_private_cards.json`;
+      link.download = `private_${teamId}.json`;
       document.body.appendChild(link);
       link.click();
       link.remove();

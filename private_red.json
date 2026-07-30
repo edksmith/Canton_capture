@@ -1,0 +1,35 @@
+{
+  "format_version": 2,
+  "team_id": "red",
+  "team_name": "Red Team",
+  "generated_at": "2026-07-30T16:33:20.537485Z",
+  "cards": [
+    {
+      "slot_id": "R1",
+      "canton_id": "GE",
+      "status": "available",
+      "reveal_at": {
+        "day": 1,
+        "time": "09:00"
+      }
+    },
+    {
+      "slot_id": "R2",
+      "canton_id": "TG",
+      "status": "available",
+      "reveal_at": {
+        "day": 1,
+        "time": "14:00"
+      }
+    },
+    {
+      "slot_id": "R3",
+      "canton_id": "JU",
+      "status": "available",
+      "reveal_at": {
+        "day": 2,
+        "time": "09:00"
+      }
+    }
+  ]
+}
