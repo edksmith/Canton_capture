@@ -15,9 +15,10 @@
     "blue": {
       "name": "Blue Team",
       "claimed": [
-        "BE",
-        "SO"
-      ],
+    "BE",
+    "SO",
+    "ZH"
+],
       "private_cards": [
         "TI"
       ]
