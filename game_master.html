@@ -400,6 +400,11 @@
         <h2>Anonymous Private Slots</h2>
         <p class="small">This dashboard shows only slot labels and status. Canton identities are deliberately hidden from the Game Master interface. Use the draw buttons at the scheduled times.</p>
         <div id="privateHands" class="team-grid"></div>
+        <div class="action-row">
+          <button id="exportBluePrivateButton" class="blue" type="button">Download Blue Private File</button>
+          <button id="exportRedPrivateButton" class="red" type="button">Download Red Private File</button>
+        </div>
+        <p class="small" style="margin-top:10px;">Send each downloaded file only to that team. The file contains the canton identities for that team's anonymous slots.</p>
       </section>
 
       <section class="panel span-6">
@@ -620,6 +625,28 @@
       }));
     }
     return exported;
+  }
+
+  function privateExportState(teamId) {
+    const team = state.teams[teamId];
+    if (!team) throw new Error(`Unknown team: ${teamId}`);
+
+    const missingMappings = team.private_cards.filter(card => !card.canton_id);
+    if (missingMappings.length) {
+      throw new Error(`This browser is missing the hidden identity for ${missingMappings.map(card => card.slot_id).join(", ")}. Use the browser that originally dealt those cards.`);
+    }
+
+    return {
+      format_version: 1,
+      team_id: teamId,
+      team_name: team.name,
+      generated_at: new Date().toISOString(),
+      cards: team.private_cards.map(card => ({
+        slot_id: card.slot_id,
+        canton_id: card.canton_id,
+        status: card.status
+      }))
+    };
   }
 
   function preservePrivateMappings(nextState, currentState) {
@@ -1129,6 +1156,24 @@
     URL.revokeObjectURL(url);
   }
 
+  function exportPrivateJson(teamId) {
+    try {
+      const privateState = privateExportState(teamId);
+      const blob = new Blob([JSON.stringify(privateState, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${teamId}_private_cards.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      showMessage(`${state.teams[teamId].name} private file downloaded.`);
+    } catch (error) {
+      showError(error);
+    }
+  }
+
   async function copyJson() {
     const text = JSON.stringify(publicExportState(), null, 2);
     try {
@@ -1166,6 +1211,8 @@
     $("exportButtonBottom").addEventListener("click", exportJson);
     $("copyJsonButton").addEventListener("click", copyJson);
     $("clearLocalButton").addEventListener("click", clearLocalSave);
+    $("exportBluePrivateButton").addEventListener("click", () => exportPrivateJson("blue"));
+    $("exportRedPrivateButton").addEventListener("click", () => exportPrivateJson("red"));
   }
 
   async function initialize() {

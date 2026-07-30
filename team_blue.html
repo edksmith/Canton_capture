@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blue Team — Swiss Canton Scramble</title>
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --panel: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #d1d5db;
+      --team: #1677d2;
+      --team-soft: #eff6ff;
+      --danger: #991b1b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .container {
+      width: min(920px, calc(100% - 24px));
+      margin: 0 auto;
+      padding: 22px 0 44px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 5px solid var(--team);
+    }
+
+    h1, h2, h3 { margin-top: 0; }
+    h1 { margin-bottom: 4px; }
+    .subtitle { margin: 0; color: var(--muted); }
+
+    .toolbar, .action-row {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .notice {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 14px;
+      background: white;
+    }
+
+    .notice.error {
+      border-color: #fca5a5;
+      background: #fef2f2;
+      white-space: pre-wrap;
+    }
+
+    .notice.success {
+      border-color: #86efac;
+      background: #f0fdf4;
+    }
+
+    .hidden { display: none !important; }
+
+    button, .button-link, .file-label {
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 13px;
+      cursor: pointer;
+      background: var(--team);
+      color: white;
+      font: inherit;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button.secondary, .button-link.secondary {
+      background: #e5e7eb;
+      color: var(--text);
+    }
+
+    button.danger { background: var(--danger); }
+    input[type="file"] { display: none; }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .summary-item {
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 12px;
+      background: var(--team-soft);
+    }
+
+    .summary-label { color: var(--muted); font-size: 0.9rem; }
+    .summary-value { font-size: 1.35rem; font-weight: 800; margin-top: 4px; }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    details.private-card {
+      border: 1px solid var(--border);
+      border-top: 5px solid var(--team);
+      border-radius: 12px;
+      background: white;
+      overflow: hidden;
+    }
+
+    details.private-card[open] { background: var(--team-soft); }
+
+    details.private-card summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+    }
+
+    details.private-card summary::-webkit-details-marker { display: none; }
+
+    .status-badge {
+      border-radius: 999px;
+      padding: 5px 8px;
+      background: #e5e7eb;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: capitalize;
+    }
+
+    .card-content {
+      border-top: 1px solid var(--border);
+      padding: 15px;
+    }
+
+    .canton-name { font-size: 1.25rem; font-weight: 800; margin-bottom: 8px; }
+    .challenge-title { font-size: 1.05rem; font-weight: 800; margin: 14px 0 7px; }
+    .instructions {
+      white-space: pre-line;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+
+    .public-board {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .public-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      background: white;
+    }
+
+    .small { color: var(--muted); font-size: 0.9rem; }
+
+    @media (max-width: 700px) {
+      .summary-grid { grid-template-columns: 1fr; }
+      .public-board, .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 460px) {
+      .public-board, .card-grid { grid-template-columns: 1fr; }
+      .toolbar > *, .action-row > * { flex: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>🔵 <span id="teamHeading">Blue Team</span></h1>
+        <p class="subtitle">Private Canton Cards</p>
+      </div>
+      <div class="toolbar">
+        <a class="button-link secondary" href="index.html">Open Public View</a>
+        <button id="hideAllButton" class="secondary" type="button">Hide All Cards</button>
+      </div>
+    </header>
+
+    <div id="errorBox" class="notice error hidden"></div>
+    <div id="messageBox" class="notice success hidden"></div>
+
+    <section class="panel">
+      <h2>Load Your Private Cards</h2>
+      <p class="small">Import the private JSON file sent by the Game Master. It is saved only in this browser on this device.</p>
+      <div class="action-row">
+        <label class="file-label" for="privateFileInput">Import Updated Private File</label>
+        <input id="privateFileInput" type="file" accept="application/json,.json">
+        <button id="clearPrivateButton" class="danger" type="button">Clear Private Data</button>
+      </div>
+      <p id="fileStatus" class="small" style="margin-bottom:0; margin-top:12px;">No private file loaded.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Your Game Summary</h2>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <div class="summary-label">Private slots</div>
+          <div id="privateCount" class="summary-value">0</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Claimed cantons</div>
+          <div id="claimedCount" class="summary-value">0</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Current score</div>
+          <div id="teamScore" class="summary-value">0</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Your Private Cards</h2>
+      <p class="small">Open only the slot you need. To claim one, tell the Game Master the slot label (for example, B1) and reveal the canton after your proof is accepted.</p>
+      <div id="privateCards" class="card-grid"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Current Public Board</h2>
+      <div id="publicBoard" class="public-board"></div>
+    </section>
+  </div>
+
+<script>
+(() => {
+  "use strict";
+
+  const TEAM_ID = "blue";
+  const STORAGE_KEY = `cantonScramblePrivate_${TEAM_ID}_v1`;
+
+  let cantons = [];
+  let challenges = [];
+  let publicState = null;
+  let privateState = null;
+
+  const $ = (id) => document.getElementById(id);
+
+  function showError(error) {
+    const box = $("errorBox");
+    box.textContent = error instanceof Error ? error.message : String(error);
+    box.classList.remove("hidden");
+  }
+
+  function hideError() {
+    $("errorBox").classList.add("hidden");
+  }
+
+  function showMessage(text) {
+    const box = $("messageBox");
+    box.textContent = text;
+    box.classList.remove("hidden");
+    window.setTimeout(() => box.classList.add("hidden"), 3000);
+  }
+
+  async function fetchJson(path) {
+    const response = await fetch(`${path}?v=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`Could not load ${path} (HTTP ${response.status}).`);
+    try {
+      return await response.json();
+    } catch (error) {
+      throw new Error(`${path} is not valid JSON: ${error.message}`);
+    }
+  }
+
+  function cantonById(id) {
+    return cantons.find(canton => canton.canton_id === id);
+  }
+
+  function challengeById(id) {
+    return challenges.find(challenge => challenge.canton_id === id);
+  }
+
+  function displayName(id) {
+    return cantonById(id)?.name || id;
+  }
+
+  function calculateScore(claimed) {
+    return claimed.reduce((score, cantonId) => {
+      const canton = cantonById(cantonId);
+      if (!canton) return score;
+      const connected = claimed.some(other => other !== cantonId && canton.neighbors.includes(other));
+      return score + (connected ? 2 : 1);
+    }, 0);
+  }
+
+  function validatePrivateState(raw) {
+    if (!raw || typeof raw !== "object") throw new Error("The selected file is not a valid private-card file.");
+    if (raw.team_id !== TEAM_ID) {
+      throw new Error(`This is a ${raw.team_id || "different"} team file. Open it on the correct team page.`);
+    }
+    if (!Array.isArray(raw.cards)) throw new Error("The private-card file does not contain a cards list.");
+    return {
+      format_version: raw.format_version || 1,
+      team_id: raw.team_id,
+      team_name: raw.team_name || (TEAM_ID === "blue" ? "Blue Team" : "Red Team"),
+      generated_at: raw.generated_at || null,
+      cards: raw.cards.map(card => ({
+        slot_id: String(card.slot_id || ""),
+        canton_id: String(card.canton_id || ""),
+        status: card.status || "available"
+      }))
+    };
+  }
+
+  function savePrivateState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(privateState));
+  }
+
+  function loadSavedPrivateState() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+    try {
+      privateState = validatePrivateState(JSON.parse(saved));
+    } catch (error) {
+      localStorage.removeItem(STORAGE_KEY);
+      showError(`Saved private data was invalid and has been cleared: ${error.message}`);
+    }
+  }
+
+  async function importPrivateFile(file) {
+    if (!file) return;
+    const text = await file.text();
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch (error) {
+      throw new Error(`The selected file is not valid JSON: ${error.message}`);
+    }
+    privateState = validatePrivateState(parsed);
+    savePrivateState();
+    renderAll();
+    showMessage("Private cards imported successfully.");
+  }
+
+  function renderHeaderAndStatus() {
+    const teamName = privateState?.team_name || publicState?.teams?.[TEAM_ID]?.name || "Blue Team";
+    $("teamHeading").textContent = teamName;
+
+    if (!privateState) {
+      $("fileStatus").textContent = "No private file loaded.";
+      return;
+    }
+
+    const dateText = privateState.generated_at
+      ? new Date(privateState.generated_at).toLocaleString()
+      : "unknown time";
+    $("fileStatus").textContent = `Loaded ${privateState.cards.length} private slot(s). File generated ${dateText}.`;
+  }
+
+  function renderSummary() {
+    const cards = privateState?.cards || [];
+    const claimed = publicState?.teams?.[TEAM_ID]?.claimed || [];
+    $("privateCount").textContent = String(cards.length);
+    $("claimedCount").textContent = String(claimed.length);
+    $("teamScore").textContent = String(calculateScore(claimed));
+  }
+
+  function renderPrivateCards() {
+    const wrapper = $("privateCards");
+    wrapper.innerHTML = "";
+
+    if (!privateState || !privateState.cards.length) {
+      wrapper.innerHTML = '<p class="small">Import your private team file to see your anonymous slots and canton assignments.</p>';
+      return;
+    }
+
+    for (const card of privateState.cards) {
+      const canton = cantonById(card.canton_id);
+      const challenge = challengeById(card.canton_id);
+      const details = document.createElement("details");
+      details.className = "private-card";
+
+      const summary = document.createElement("summary");
+      const slot = document.createElement("span");
+      slot.textContent = `${card.slot_id} — Reveal card`;
+      const status = document.createElement("span");
+      status.className = "status-badge";
+      status.textContent = card.status;
+      summary.append(slot, status);
+
+      const content = document.createElement("div");
+      content.className = "card-content";
+
+      const cantonName = document.createElement("div");
+      cantonName.className = "canton-name";
+      cantonName.textContent = `${canton?.name || card.canton_id} (${card.canton_id})`;
+
+      const challengeTitle = document.createElement("div");
+      challengeTitle.className = "challenge-title";
+      challengeTitle.textContent = challenge?.title || "Challenge unavailable";
+
+      const description = document.createElement("p");
+      description.textContent = challenge?.description || "";
+
+      const instructions = document.createElement("div");
+      instructions.className = "instructions";
+      instructions.textContent = challenge?.instructions || "No instructions found.";
+
+      content.append(cantonName, challengeTitle, description, instructions);
+      details.append(summary, content);
+      wrapper.appendChild(details);
+    }
+  }
+
+  function renderPublicBoard() {
+    const wrapper = $("publicBoard");
+    wrapper.innerHTML = "";
+    const board = publicState?.public_board || [];
+    if (!board.length) {
+      wrapper.innerHTML = '<p class="small">No public cards are currently available.</p>';
+      return;
+    }
+    for (const id of board) {
+      const card = document.createElement("div");
+      card.className = "public-card";
+      const name = document.createElement("strong");
+      name.textContent = displayName(id);
+      const code = document.createElement("div");
+      code.className = "small";
+      code.textContent = id;
+      card.append(name, code);
+      wrapper.appendChild(card);
+    }
+  }
+
+  function renderAll() {
+    hideError();
+    renderHeaderAndStatus();
+    renderSummary();
+    renderPrivateCards();
+    renderPublicBoard();
+  }
+
+  function hideAllCards() {
+    document.querySelectorAll("details.private-card[open]").forEach(details => {
+      details.open = false;
+    });
+  }
+
+  function clearPrivateData() {
+    if (!window.confirm("Clear this team's private-card data from this browser?")) return;
+    localStorage.removeItem(STORAGE_KEY);
+    privateState = null;
+    renderAll();
+    showMessage("Private data cleared from this browser.");
+  }
+
+  function bindEvents() {
+    $("privateFileInput").addEventListener("change", async (event) => {
+      try {
+        await importPrivateFile(event.target.files?.[0]);
+        event.target.value = "";
+      } catch (error) {
+        showError(error);
+      }
+    });
+    $("hideAllButton").addEventListener("click", hideAllCards);
+    $("clearPrivateButton").addEventListener("click", clearPrivateData);
+  }
+
+  async function initialize() {
+    try {
+      bindEvents();
+      [cantons, challenges, publicState] = await Promise.all([
+        fetchJson("cantons.json"),
+        fetchJson("challenges.json"),
+        fetchJson("game_state.json")
+      ]);
+      loadSavedPrivateState();
+      renderAll();
+    } catch (error) {
+      showError(error);
+    }
+  }
+
+  initialize();
+})();
+</script>
+</body>
+</html>
