@@ -1,24 +1,67 @@
 {
-  "game_status": "setup",
+  "game_status": "testing",
   "day": 1,
-  "time": "09:00",
+  "time": "12:30",
   "public_board": [
-    "BE",
-    "ZH",
-    "AI",
-    "ZG"
+    "FR",
+    "TI",
+    "SH",
+    "LU"
   ],
   "teams": {
     "blue": {
       "name": "Blue Team",
-      "claimed": [],
-      "private_cards": []
+      "claimed": [
+        "BE",
+        "SO",
+        "AG"
+      ],
+      "private_cards": [
+        "UR"
+      ]
     },
     "red": {
       "name": "Red Team",
-      "claimed": [],
-      "private_cards": []
+      "claimed": [
+        "ZH",
+        "ZG",
+        "AI"
+      ],
+      "private_cards": [
+        "VD"
+      ]
     }
   },
-  "claim_log": []
+  "claim_log": [
+    {
+      "team": "blue",
+      "canton": "BE",
+      "time": "09:45"
+    },
+    {
+      "team": "red",
+      "canton": "ZH",
+      "time": "10:10"
+    },
+    {
+      "team": "blue",
+      "canton": "SO",
+      "time": "10:55"
+    },
+    {
+      "team": "red",
+      "canton": "ZG",
+      "time": "11:20"
+    },
+    {
+      "team": "blue",
+      "canton": "AG",
+      "time": "11:50"
+    },
+    {
+      "team": "red",
+      "canton": "AI",
+      "time": "12:15"
+    }
+  ]
 }
