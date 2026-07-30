@@ -1,0 +1,20 @@
+{
+  "game_status": "setup",
+  "day": 1,
+  "public_board": [
+    "BE",
+    "ZH",
+    "VS",
+    "GR"
+  ],
+  "teams": {
+    "blue": {
+      "claimed": [],
+      "private_cards": []
+    },
+    "red": {
+      "claimed": [],
+      "private_cards": []
+    }
+  }
+}
