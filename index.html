@@ -123,6 +123,59 @@ button {
     margin: 20px 0;
 }
 
+
+.map-panel {
+    margin-top: 24px;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.10);
+}
+
+.canton-map-wrap {
+    width: 100%;
+    overflow: hidden;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    background: #f8fafc;
+    padding: 10px;
+}
+
+.canton-map-wrap svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 560px;
+}
+
+.map-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 10px 0 12px;
+    font-size: 0.9rem;
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend-swatch {
+    width: 18px;
+    height: 18px;
+    border: 1px solid #1f2937;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.map-selection {
+    min-height: 24px;
+    margin-top: 10px;
+    font-weight: 700;
+}
+
 @media (max-width: 600px) {
     body {
         padding: 12px;
@@ -157,6 +210,19 @@ button {
 
 <div id="board" class="board"></div>
 
+<section class="map-panel">
+    <h2>Live Canton Map</h2>
+    <div class="map-legend">
+        <span class="legend-item"><span class="legend-swatch" style="background:#2563eb"></span>Blue claimed</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#dc2626"></span>Red claimed</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#9ca3af"></span>Public board</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#ffffff"></span>Unclaimed</span>
+    </div>
+    <div id="cantonMap" class="canton-map-wrap"><p>Loading canton map…</p></div>
+    <div id="mapSelection" class="map-selection">Select a canton for details. Grey public cantons open their challenge.</div>
+    <p style="font-size:0.8rem;color:#6b7280;margin-bottom:0;">Map geometry adapted from <em>Suisse cantons.svg</em> by Pymouss44, modified by Ngagnebin, via Wikimedia Commons, CC BY-SA 4.0.</p>
+</section>
+
 <h2>Game Status</h2>
 <div id="status" class="notice">Loading…</div>
 
@@ -190,6 +256,7 @@ let cantons = [];
 let challenges = [];
 let gameState = null;
 let refreshInProgress = false;
+let mapLoaded = false;
 
 function escapeHtml(value) {
     return String(value ?? "")
@@ -287,6 +354,76 @@ async function loadReferenceData() {
     challenges = await challengeResponse.json();
 }
 
+async function loadMap() {
+    const response = await fetch(`swiss_cantons_map.svg?v=${Date.now()}`, {
+        cache: "no-store"
+    });
+
+    if (!response.ok) {
+        throw new Error(`Could not load swiss_cantons_map.svg (HTTP ${response.status}).`);
+    }
+
+    document.getElementById("cantonMap").innerHTML = await response.text();
+    mapLoaded = true;
+
+    document
+        .querySelectorAll("#cantonMap [data-canton-id].canton-shape")
+        .forEach(path => {
+            const activate = () => selectMapCanton(path.dataset.cantonId);
+            path.addEventListener("click", activate);
+            path.addEventListener("keydown", event => {
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    activate();
+                }
+            });
+        });
+}
+
+function mapCantonStatus(id) {
+    if (gameState?.teams?.blue?.claimed?.includes(id)) {
+        return { label: `${gameState.teams.blue.name} claimed`, color: "#2563eb" };
+    }
+
+    if (gameState?.teams?.red?.claimed?.includes(id)) {
+        return { label: `${gameState.teams.red.name} claimed`, color: "#dc2626" };
+    }
+
+    if (gameState?.public_board?.includes(id)) {
+        return { label: "On the public board — select to open challenge", color: "#9ca3af" };
+    }
+
+    return { label: "Unclaimed and not public", color: "#ffffff" };
+}
+
+function selectMapCanton(id) {
+    if (!gameState) return;
+    const status = mapCantonStatus(id);
+    document.getElementById("mapSelection").textContent =
+        `${cantonName(id)} (${id}) — ${status.label}.`;
+
+    if (gameState.public_board.includes(id)) {
+        openChallenge(id);
+    }
+}
+
+function renderMap() {
+    if (!mapLoaded || !gameState) return;
+
+    document
+        .querySelectorAll("#cantonMap [data-canton-id].canton-shape")
+        .forEach(path => {
+            const id = path.dataset.cantonId;
+            const status = mapCantonStatus(id);
+            path.style.fill = status.color;
+            path.style.opacity = "1";
+            path.setAttribute(
+                "aria-label",
+                `${cantonName(id)} (${id}): ${status.label}`
+            );
+        });
+}
+
 async function refreshGameState() {
     if (refreshInProgress) return;
     refreshInProgress = true;
@@ -331,6 +468,7 @@ async function refreshGameState() {
 async function loadGameData() {
     try {
         await loadReferenceData();
+        await loadMap();
         await refreshGameState();
         setInterval(refreshGameState, AUTO_REFRESH_MS);
     } catch (error) {
@@ -345,6 +483,7 @@ function renderPage() {
     displayStatus();
     displayTeams();
     displayClaims();
+    renderMap();
 }
 
 function getCanton(cantonID) {

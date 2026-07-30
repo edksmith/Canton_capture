@@ -249,6 +249,67 @@
 
     #errorBox { white-space: pre-wrap; }
 
+
+    .clock-note {
+      margin-top: 14px;
+      background: #eff6ff;
+      border-color: #93c5fd;
+    }
+
+    .clock-buttons {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .clock-buttons button.active-control { background: #166534; }
+    .clock-buttons button.pause-control { background: #92400e; }
+
+    .canton-map-wrap {
+      width: 100%;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #f8fafc;
+      padding: 10px;
+    }
+
+    .canton-map-wrap svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 560px;
+    }
+
+    .map-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 12px 0 8px;
+      font-size: 0.9rem;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-swatch {
+      width: 18px;
+      height: 18px;
+      border: 1px solid #1f2937;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .map-selection {
+      min-height: 24px;
+      margin-top: 8px;
+      font-weight: 700;
+    }
+
     @media (max-width: 850px) {
       .span-8, .span-6, .span-4 { grid-column: span 12; }
       .board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -340,16 +401,30 @@
       <section class="panel span-12">
         <h2>Game Controls</h2>
         <div class="form-grid">
-          <div><label for="gameStatus">Game status</label><select id="gameStatus"><option value="setup">Setup</option><option value="active">Active</option><option value="paused">Paused</option><option value="overnight">Overnight</option><option value="finished">Finished</option><option value="testing">Testing</option></select></div>
+          <div><label for="gameStatus">Game status</label><select id="gameStatus"><option value="setup">Setup</option><option value="active">Active — automatic Zurich time</option><option value="paused">Paused</option><option value="overnight">Overnight</option><option value="finished">Finished</option><option value="testing">Testing — manual time</option></select></div>
           <div><label for="gameDay">Day</label><select id="gameDay"><option value="1">Day 1</option><option value="2">Day 2</option></select></div>
-          <div><label for="gameTime">Display time</label><input id="gameTime" type="time" value="09:00"></div>
+          <div><label for="gameTime">Official game time</label><input id="gameTime" type="time" value="09:00"><div id="clockFieldHelp" class="small" style="margin-top:6px;"></div></div>
           <div><label for="boardSize">Public board size</label><input id="boardSize" type="number" min="1" max="8" value="4"></div>
           <div><label for="blueName">Blue team name</label><input id="blueName" type="text" value="Blue Team"></div>
           <div><label for="redName">Red team name</label><input id="redName" type="text" value="Red Team"></div>
         </div>
+
+        <div id="clockNote" class="notice clock-note">
+          While the game is active, the backend supplies the current Europe/Zurich time automatically. Setup and testing retain a manual clock. Pausing, overnight, and finishing freeze the last displayed time.
+        </div>
+
+        <div class="clock-buttons">
+          <button id="startDay1Button" class="active-control" type="button">Start Day 1</button>
+          <button id="pauseGameButton" class="pause-control" type="button">Pause</button>
+          <button id="resumeGameButton" class="active-control" type="button">Resume</button>
+          <button id="endDay1Button" class="secondary" type="button">End Day 1</button>
+          <button id="startDay2Button" class="active-control" type="button">Start Day 2</button>
+          <button id="finishGameButton" class="danger" type="button">End Game</button>
+        </div>
+
         <div class="action-row">
-          <button id="saveMetadataButton" type="button">Save Status & Names</button>
-          <button id="newGameButton" class="danger" type="button">Start New Two-Team Game</button>
+          <button id="saveMetadataButton" type="button">Save Manual Settings & Names</button>
+          <button id="newGameButton" class="danger" type="button">Create New Game Setup</button>
           <button id="reloadBackendButton" class="secondary" type="button">Reload from Backend</button>
           <button id="undoButton" class="secondary" type="button">Undo Last Action</button>
         </div>
@@ -357,6 +432,19 @@
 
       <section id="boardPanel" class="panel span-8"><h2>Public Board</h2><div id="boardStatus" class="small"></div><div id="publicBoard" class="board"></div></section>
       <section class="panel span-4"><h2>Scores & Territories</h2><div id="teamSummary" class="team-grid"></div></section>
+
+      <section class="panel span-12">
+        <h2>Live Canton Map</h2>
+        <div class="map-legend">
+          <span class="legend-item"><span class="legend-swatch" style="background:#2563eb"></span>Blue claimed</span>
+          <span class="legend-item"><span class="legend-swatch" style="background:#dc2626"></span>Red claimed</span>
+          <span class="legend-item"><span class="legend-swatch" style="background:#9ca3af"></span>Public board</span>
+          <span class="legend-item"><span class="legend-swatch" style="background:#ffffff"></span>Unclaimed</span>
+        </div>
+        <div id="cantonMap" class="canton-map-wrap"><p class="small">Loading canton map…</p></div>
+        <div id="mapSelection" class="map-selection small">Select a canton on the map for details.</div>
+        <p class="small" style="margin-bottom:0;">Map geometry adapted from <em>Suisse cantons.svg</em> by Pymouss44, modified by Ngagnebin, via Wikimedia Commons, CC BY-SA 4.0.</p>
+      </section>
 
       <section class="panel span-6">
         <h2>Record a Claim</h2><div id="claimLockNotice" class="notice warning hidden"></div>
@@ -405,6 +493,7 @@
   let challenges = [];
   let state = null;
   let busy = false;
+  let mapLoaded = false;
 
   const $ = (id) => document.getElementById(id);
 
@@ -417,9 +506,12 @@
   }
 
   function nowTime() {
-    const now = new Date();
-    return String(now.getHours()).padStart(2, "0") + ":" +
-      String(now.getMinutes()).padStart(2, "0");
+    return new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Europe/Zurich",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    }).format(new Date());
   }
 
   function showMessage(text) {
@@ -519,6 +611,9 @@
   function stateForComparison(value) {
     const copy = clone(value);
     delete copy.last_update;
+    // The server owns the clock while active, so a minute boundary during a
+    // save must not be treated as a state mismatch.
+    if (copy.game_status === "active") copy.time = "AUTOMATIC";
     return copy;
   }
 
@@ -689,9 +784,11 @@
 
   function isPrivateCardUnlocked(card) {
     if (card.status === "claimed") return true;
+    if (state.game_status === "setup") return false;
     const reveal = card.reveal_at || { day: 1, time: "09:00" };
     if (Number(state.day) > Number(reveal.day)) return true;
     if (Number(state.day) < Number(reveal.day)) return false;
+    if (String(reveal.time || "09:00") === "09:00") return true;
     return timeToMinutes(state.time) >= timeToMinutes(reveal.time);
   }
 
@@ -795,6 +892,65 @@
     }
   }
 
+  async function loadMap() {
+    const response = await fetch(`swiss_cantons_map.svg?v=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`Could not load swiss_cantons_map.svg (HTTP ${response.status}).`);
+    $("cantonMap").innerHTML = await response.text();
+    mapLoaded = true;
+
+    $("cantonMap").querySelectorAll("[data-canton-id].canton-shape").forEach(path => {
+      const activate = () => selectMapCanton(path.dataset.cantonId);
+      path.addEventListener("click", activate);
+      path.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          activate();
+        }
+      });
+    });
+  }
+
+  function mapCantonStatus(id) {
+    if (state.teams.blue.claimed.includes(id)) return { label: `${state.teams.blue.name} claimed`, color: "#2563eb" };
+    if (state.teams.red.claimed.includes(id)) return { label: `${state.teams.red.name} claimed`, color: "#dc2626" };
+    if (state.public_board.includes(id)) return { label: "On the public board", color: "#9ca3af" };
+    return { label: "Unclaimed and not public", color: "#ffffff" };
+  }
+
+  function selectMapCanton(id) {
+    const status = mapCantonStatus(id);
+    $("mapSelection").textContent = `${displayName(id)} (${id}) — ${status.label}.`;
+    if (state.public_board.includes(id)) {
+      $("publicClaimCanton").value = id;
+    }
+  }
+
+  function renderMap() {
+    if (!mapLoaded || !state) return;
+    $("cantonMap").querySelectorAll("[data-canton-id].canton-shape").forEach(path => {
+      const id = path.dataset.cantonId;
+      const status = mapCantonStatus(id);
+      path.style.fill = status.color;
+      path.style.opacity = "1";
+      path.setAttribute("aria-label", `${displayName(id)} (${id}): ${status.label}`);
+    });
+  }
+
+  function renderClockControls() {
+    const active = state.game_status === "active";
+    $("gameTime").disabled = active;
+    $("clockFieldHelp").textContent = active
+      ? "Automatic Europe/Zurich server time while active."
+      : "Frozen/manual time. Testing mode uses this value to simulate unlocks.";
+
+    $("startDay1Button").disabled = busy || (state.game_status === "active" && state.day === 1);
+    $("pauseGameButton").disabled = busy || state.game_status !== "active";
+    $("resumeGameButton").disabled = busy || state.game_status !== "paused";
+    $("endDay1Button").disabled = busy || state.day !== 1 || ["setup", "overnight", "finished"].includes(state.game_status);
+    $("startDay2Button").disabled = busy || (state.game_status === "active" && state.day === 2);
+    $("finishGameButton").disabled = busy || state.game_status === "finished";
+  }
+
   function renderMetadata() {
     $("gameStatus").value = state.game_status;
     $("gameDay").value = String(state.day);
@@ -802,6 +958,7 @@
     $("boardSize").value = state.settings.board_size;
     $("blueName").value = state.teams.blue.name;
     $("redName").value = state.teams.red.name;
+    renderClockControls();
   }
 
   function renderBoard() {
@@ -922,6 +1079,7 @@
     renderPrivateHands();
     renderLog();
     renderRefresh();
+    renderMap();
     renderJsonPreview();
     $("publicClaimButton").disabled = busy || state.board_locked || !state.public_board.length;
     $("privateClaimButton").disabled = busy || state.board_locked || !$("privateClaimSlot").value;
@@ -929,15 +1087,51 @@
   }
 
   async function saveMetadata() {
-    await commit("Updated status, clock, settings, or team names", () => {
+    await commit("Updated manual settings or team names", () => {
       state.game_status = $("gameStatus").value;
       state.day = Number($("gameDay").value);
-      state.time = $("gameTime").value || "09:00";
+      if (state.game_status !== "active") {
+        state.time = $("gameTime").value || "09:00";
+      }
       state.settings.board_size = Math.max(1, Math.min(8, Number($("boardSize").value) || 4));
       state.teams.blue.name = $("blueName").value.trim() || "Blue Team";
       state.teams.red.name = $("redName").value.trim() || "Red Team";
-      logAction(null, null, "updated the game status, clock, settings, or team names", "metadata");
-    }, "Status, time, and team names saved to the backend.");
+      logAction(null, null, "updated the game settings or team names", "metadata");
+    }, "Settings and team names saved to the backend.");
+  }
+
+  async function setGamePhase(status, day, actionText, successMessage) {
+    await commit(actionText, () => {
+      state.day = day;
+      state.game_status = status;
+      if (status === "active") state.time = nowTime();
+      logAction(null, null, actionText, "clock");
+    }, successMessage);
+  }
+
+  function startDay1() {
+    return setGamePhase("active", 1, "started Day 1", "Day 1 started. The clock now follows Europe/Zurich time automatically.");
+  }
+
+  function pauseGame() {
+    return setGamePhase("paused", state.day, `paused Day ${state.day}`, "Game paused. The official time is frozen.");
+  }
+
+  function resumeGame() {
+    return setGamePhase("active", state.day, `resumed Day ${state.day}`, "Game resumed. The clock is automatic again.");
+  }
+
+  function endDay1() {
+    return setGamePhase("overnight", 1, "ended Day 1", "Day 1 ended. The official time is frozen overnight.");
+  }
+
+  function startDay2() {
+    return setGamePhase("active", 2, "started Day 2", "Day 2 started. B3 and R3 are now available.");
+  }
+
+  function finishGame() {
+    if (!window.confirm("End the game and freeze the final state?")) return;
+    return setGamePhase("finished", state.day, "ended the game", "Game finished. The final time and state are frozen.");
   }
 
   async function startNewGame() {
@@ -948,7 +1142,7 @@
       const boardSize = Math.max(1, Math.min(8, Number($("boardSize").value) || 4));
       state = normalizeState({
         format_version: 2,
-        game_status: "active",
+        game_status: "setup",
         day: 1,
         time: "09:00",
         public_board: [],
@@ -979,7 +1173,7 @@
         state.public_board.push(drawn);
       }
       logAction(null, null, "started a new game, preselected six private cards, and dealt the initial public board", "setup");
-    }, "New game created and saved. The public board and all six private cards now live in the backend.");
+    }, "New game setup created. All private cards remain locked until Start Day 1 is pressed.");
   }
 
   async function confirmPublicClaim() {
@@ -1140,6 +1334,12 @@
     $("testBackendButton").addEventListener("click", testBackendConnection);
     $("reloadBackendButton").addEventListener("click", reloadBackend);
     $("saveMetadataButton").addEventListener("click", saveMetadata);
+    $("startDay1Button").addEventListener("click", startDay1);
+    $("pauseGameButton").addEventListener("click", pauseGame);
+    $("resumeGameButton").addEventListener("click", resumeGame);
+    $("endDay1Button").addEventListener("click", endDay1);
+    $("startDay2Button").addEventListener("click", startDay2);
+    $("finishGameButton").addEventListener("click", finishGame);
     $("newGameButton").addEventListener("click", startNewGame);
     $("undoButton").addEventListener("click", undoLastAction);
     $("publicClaimButton").addEventListener("click", confirmPublicClaim);
@@ -1160,6 +1360,7 @@
       bindEvents();
       [cantons, challenges] = await Promise.all([fetchJson("cantons.json"), fetchJson("challenges.json")]);
       validateData();
+      await loadMap();
       const savedUrl =
         localStorage.getItem(BACKEND_URL_KEY) ||
         DEFAULT_BACKEND_URL;
@@ -1169,6 +1370,15 @@
       setBusy(true, "Loading backend state…");
       await loadBackendState({ quiet: true });
       showMessage("Live Game Master state loaded from the backend.");
+
+      window.setInterval(() => {
+        if (!busy && state?.game_status === "active") {
+          loadBackendState({ quiet: true }).catch(error => {
+            setConnectionStatus("error", "Automatic clock refresh failed");
+            showError(error);
+          });
+        }
+      }, 20000);
     } catch (error) {
       showError(error);
     } finally {
