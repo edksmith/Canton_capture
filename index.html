@@ -169,15 +169,11 @@ let cantons = [];
 
 let challenges = [];
 
+let gameState = {};
 
 
 // Temporary board for testing
-let publicBoard = [
-    "BE",
-    "ZH",
-    "VS",
-    "GR"
-];
+let publicBoard = [];
 
 
 
@@ -196,22 +192,28 @@ async function loadGameData(){
 
 
 
-    const challengeResponse =
-        await fetch("challenges.json");
+const challengeResponse =
+    await fetch("challenges.json");
+
+challenges =
+    await challengeResponse.json();
 
 
-    challenges =
-        await challengeResponse.json();
+const gameResponse =
+    await fetch("game_state.json");
+
+gameState =
+    await gameResponse.json();
 
 
+console.log("Cantons loaded:", cantons);
 
-    console.log("Cantons loaded:", cantons);
+console.log("Challenges loaded:", challenges);
 
-    console.log("Challenges loaded:", challenges);
+console.log("Game state loaded:", gameState);
 
 
-
-    displayBoard();
+displayBoard();
 
 }
 
@@ -221,6 +223,7 @@ async function loadGameData(){
 
 function displayBoard(){
 
+    publicBoard = gameState.public_board;
 
     const board =
         document.getElementById("board");
