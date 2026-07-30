@@ -415,7 +415,7 @@ function displayTeams(){
 
     <p>
     Claimed:
-    ${blue.claimed.join(", ")}
+   ${blue.claimed.length ? blue.claimed.join(", ") : "None"}
     </p>
 
     <p>
@@ -428,7 +428,7 @@ function displayTeams(){
 
     <p>
     Claimed:
-    ${red.claimed.join(", ")}
+    ${red.claimed.length ? red.claimed.join(", ") : "None"}
     </p>
 
     <p>
