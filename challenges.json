@@ -3,182 +3,182 @@
     "canton_id": "AG",
     "title": "🍺 Feldschlösschen Detective",
     "description": "Aargau is known for one of the most famous beers in Switzerland.",
-    "instructions": "Find three different Feldschlösschen products. Without looking at labels, one teammate must correctly all three flavours of the Feldschlösschen beers. The beers must be correctly matched to their labels after the guesses.(Blind taste Test) If you fail, you can try again after waiting 10 minutes",
+    "instructions": "Find three different Feldschlösschen products.\nWithout looking at the labels, one teammate must correctly identify all three flavours by taste alone (a blind taste test).\nThe beers must then be correctly matched to their labels.\n\nIf you fail, you can try again after waiting 10 minutes.",
     "retry_penalty": 10
   },
   {
     "canton_id": "AI",
     "title": "Appenzeller Cheese Whiz",
-    "description": "Appenzell is known for its famous swiss cheese company,",
-    "instructions": "Find three different cheeses that are officially branded as Appenzeller cheese.\nBefore checking the label details, the team must correctly predict which cheese is which based only on appearance, smell, or tasting.\nPossible examples include different ages or varieties of Appenzeller cheese.\nRules\nThe team must identify three different Appenzeller-branded cheeses.\nThe cheeses must be correctly matched to their labels after the guesses.(Blindtaste Test) If you fail, you can try again after waiting 10 minutes",
+    "description": "Appenzell is known for its famous Swiss cheese.",
+    "instructions": "Find three different cheeses that are officially branded as Appenzeller.\nBefore checking the labels, the team must correctly predict which cheese is which, based only on appearance, smell, or taste. Examples might include different ages or varieties of Appenzeller.\n\nRules:\nThe team must identify three different Appenzeller-branded cheeses.\nThe cheeses must be correctly matched to their labels (a blind taste test).\n\nIf you fail, you can try again after waiting 10 minutes.",
     "retry_penalty": 10
   },
   {
     "canton_id": "AR",
     "title": "Appenzell Architecture Tour",
-    "description": "Find three different traditional Appenzell houses or buildings with visible decorative artwork or painted details.",
-    "instructions": "For each building:\nTake a photo showing the decorative feature.\nIdentify what type of feature you found (for example: painted façade, carved wooden detail, traditional sign, window decoration, or other Appenzell-style ornament).\nExplain briefly why you think it represents traditional Appenzell architecture.\nRules\nThe three buildings must be at least 250 metres apart from each other.\nThe same building cannot be used more than once.\nThe decorative feature must be a permanent part of the building, not a temporary poster, advertisement, or decoration.\nFor each house:  \n* Name your favorite detail.  \n* Guess what the artwork represents.  \n* Check if you can find information about its meaning.  \nComplete the challenge by finding three different decorated houses",
+    "description": "Appenzell's traditional houses are known for their decorative artwork and painted details. Seek out three fine examples.",
+    "instructions": "For each building:\nTake a photo showing the decorative feature.\nIdentify what type of feature it is (for example: painted façade, carved wooden detail, traditional sign, window decoration, or other Appenzell-style ornament).\nExplain briefly why you think it represents traditional Appenzell architecture.\nGuess what the artwork represents, and check whether you can find any information about its meaning.\n\nRules:\nThe three buildings must be at least 250 metres apart.\nThe same building cannot be used more than once.\nThe decorative feature must be a permanent part of the building, not a temporary poster, advertisement, or decoration.\n\nComplete the challenge by finding three different decorated buildings.",
     "retry_penalty": 0
   },
   {
     "canton_id": "BE",
     "title": "Bear Imitator",
     "description": "Bern is famous for its bears. Your mission is to discover the bears hiding throughout the canton.",
-    "instructions": "Find bears from three different locations in the canton of Bern.\nFor each bear:\nTake a photo showing the bear symbol, statue, artwork, or other representation.\nIdentify where the bear was found.\nCreate a different bear pose or imitation inspired by each bear.\nThe three bears must come from different towns, villages, or cities within the canton.  You cannot use the same symbol more than 1 time.",
+    "instructions": "Find bears in three different locations in the canton of Bern.\nFor each bear:\nTake a photo showing the bear symbol, statue, artwork, or other representation.\nIdentify where you found it.\nStrike a different bear pose or imitation inspired by each one.\n\nThe three bears must come from different towns, villages, or cities within the canton. You cannot use the same one more than once.",
     "retry_penalty": 0
   },
   {
     "canton_id": "BL",
-    "title": "Fossil Hunter",
-    "description": "Basel Land is full of old Swiss fossils. Find a public geological information sign somewhere in Basel-Landschaft.",
-    "instructions": "Find a public geological information sign somewhere in Basel-Landschaft.\nThe sign must contain information about the geology, rocks, landscape formation, fossils, or natural history of the area.\nOnce you find the sign:\nTake a photo of the sign.\nIdentify one interesting geological fact from the information.\nExplain what type of geological feature or process the sign describes.\nRules\nThe team may not use Google or online searches to locate a geological information sign.\nThe sign must be discovered during normal travel through Basel-Landschaft.\nThe sign must be publicly accessible.",
+    "title": "Ring of Fire",
+    "description": "Basel-Land is home to Chienbäse, one of Switzerland's largest annual festivals, which celebrates the end of winter with huge blazing bundles of brushwood.",
+    "instructions": "Your team must travel to Liestal and find a public fireplace, then hold a pretend ceremony: act out lighting a fire and make your wishes for the end of winter. (Normally there would be a real fire, but open flames are banned during the drought.)\nThe ceremony must last at least 5 minutes.\nFilm it and share the video with the opposing team.",
     "retry_penalty": 0
   },
   {
     "canton_id": "BS",
-    "title": "Bonjour! Grüzi! Guten tag!",
+    "title": "Bonjour! Grüezi! Guten Tag!",
     "description": "Basel sits at the meeting point of Switzerland, Germany, and France. Explore Basel's unique border culture through its languages.",
-    "instructions": "Take a phot of three examples of greetings used in the Basel area:\nOne greeting in Swiss German.\nOne greeting in French.\nOne greeting in standard German.\nThe greetings can be found on public signs, advertisements, menus, shop displays, transport information, or other public sources.\nEach of the sources cannot be located within 250m of each other. \nPhotos must clearly show the language being used.",
+    "instructions": "Take a photo of three examples of greetings used in the Basel area:\none greeting in Swiss German;\none greeting in French;\none greeting in standard German.\n\nThe greetings can be found on public signs, advertisements, menus, shop displays, transport information, or other public sources.\nEach source must be at least 250 metres from the others.\nPhotos must clearly show the language being used.",
     "retry_penalty": 0
   },
   {
     "canton_id": "FR",
     "title": "Time Traveler",
     "description": "Fribourg combines medieval history with modern life. Find clues that show how the city has changed over time.",
-    "instructions": "Find three objects/buildings/features that existed in medieval Fribourg, judged by ChatGPT to be at least over 500 years old.  And then, one modern object that is judged by ChatGPT to be less than 1 year old (note, this cannot be any perishable or edible, it must be a \"permanent\" object).",
+    "instructions": "Find three objects, buildings, or features from medieval Fribourg that ChatGPT judges to be at least 500 years old.\nThen find one modern object that ChatGPT judges to be less than 1 year old. This cannot be anything perishable or edible; it must be a \"permanent\" object.",
     "retry_penalty": 0
   },
   {
     "canton_id": "GE",
     "title": "Geneva Peace Summit",
-    "description": "Geneva is one of the world's most important centers for international diplomacy, peace, and global cooperation.",
-    "instructions": "Complete a Geneva international relations trivia challenge.\nThe Game Master will generate three age-appropriate questions about Geneva's role in world affairs using the following prompt:\nCreate three multiple choice (A-D) trivia questions suitable for a knowledgeable 12-year-old about Geneva's role in international relations. Questions may relate to the United Nations, international organizations, diplomacy, peace agreements, humanitarian work, or major historical events connected to Geneva. Questions should require knowledge and reasoning but not specialist expertise.\n\nThe team must answer all three questions correctly. If you do not answer all three correctly, you must wait at least 15 minutes before trying again.",
+    "description": "Geneva is one of the world's most important centres for international diplomacy, peace, and global cooperation.",
+    "instructions": "Complete a Geneva international-relations trivia challenge.\nThe Game Master generates three age-appropriate questions using the following prompt:\n\n\"Create three multiple-choice (A–D) trivia questions suitable for a knowledgeable 12-year-old about Geneva's role in international relations. Questions may relate to the United Nations, international organisations, diplomacy, peace agreements, humanitarian work, or major historical events connected to Geneva. Questions should require knowledge and reasoning but not specialist expertise.\"\n\nThe team must answer all three correctly. If you do not, you must wait at least 15 minutes before trying again.",
     "retry_penalty": 15
   },
   {
     "canton_id": "GL",
     "title": "The Green Cheese Roll",
-    "description": "Glarus is home to Schabziger, one of Switzerland's most distinctive cheeses. Your mission is to prove your cheese skills with a rolling challenge inspired by the famous cheese games of the world.",
-    "instructions": "Find a piece of Schabziger or another suitable cheese product from Glarus. The cheese cannot cost more than 10 CHF total.\nCreate a cheese rolling course using a safe, publicly accessible area with a slight slope.\nThe team must:\nPlace the cheese at the starting point.\nRoll the cheese down the course. The cheese must roll at least 5m down the hill before stopping. If it does not roll 10m, you must wait 10 minutes before attempting again.",
+    "description": "Glarus is home to Schabziger, one of Switzerland's most distinctive cheeses. Prove your cheese skills with a rolling challenge inspired by the famous cheese games of the world.",
+    "instructions": "Find a piece of Schabziger or another suitable Glarus cheese product. The cheese cannot cost more than 10 CHF in total.\nBuild a cheese-rolling course on a safe, publicly accessible area with a slight slope.\n\nThe team must:\nplace the cheese at the starting point;\nroll the cheese down the course. The cheese must roll at least 10m before stopping. If it does not, you must wait 10 minutes before trying again.",
     "retry_penalty": 10
   },
   {
     "canton_id": "GR",
     "title": "Rätoromanisch Translator",
-    "description": "Graubünden is Switzerland’s most linguistically diverse canton and home to Rätoromanisch, one of Switzerland’s national languages. Explore the language hidden in the landscape.",
-    "instructions": "Find three examples of Rätoromanisch words or phrases in Graubünden.\nThe words can be found on:\nsigns;\npublic information boards;\nplace names;\nadvertisements;\nofficial displays;\nother public sources.\nFor each word:\nTake a photo showing the Rätoromanisch word.\nGuess what the word means.\nVerify the meaning using an available source (for example, translation information, a sign explanation, or another reliable source).\nThe team must correctly identify the meaning of all three words.  If you guess any of the words wrong, you must find a new one for it to count",
+    "description": "Graubünden is Switzerland's most linguistically diverse canton and home to Rätoromanisch, one of Switzerland's national languages. Explore the language hidden in the landscape.",
+    "instructions": "Find three examples of Rätoromanisch words or phrases in Graubünden.\nThe words can be found on:\nsigns;\npublic information boards;\nplace names;\nadvertisements;\nofficial displays;\nor other public sources.\n\nFor each word:\ntake a photo showing the Rätoromanisch word;\nguess what it means;\nverify the meaning using an available source (for example a sign's explanation, translation information, or another reliable source).\n\nThe team must correctly identify the meaning of all three words. If you guess any word wrong, you must find a new one for it to count.",
     "retry_penalty": 0
   },
   {
     "canton_id": "JU",
     "title": "Freiberger Horse Creator",
-    "description": "The Franches-Montagnes horse is one of Switzerland’s most famous horse breeds and is strongly connected to Jura. Create your own perfect Freiberger horse.",
-    "instructions": "Design your own Freiberger horse profile.\nYour team must decide:\n1) The horse’s name.\n2) Its personality.\n3) Its special ability.\n4) Its ideal job.\n5) Its weakness or funny flaw.\nThe profile must include at least three real characteristics of the Freiberger breed.\nDraw a picture of your horse and make a video (at least 30 seconds long) that presents your horse's profile and send it to the other team. You cannot do any research or preparations for this task until you are in canton Jura.",
+    "description": "The Franches-Montagnes (Freiberger) horse is one of Switzerland's most famous breeds and is strongly connected to Jura. Create your own perfect Freiberger horse.",
+    "instructions": "Design your own Freiberger horse profile. Your team must decide:\n1) the horse's name;\n2) its personality;\n3) its special ability;\n4) its ideal job;\n5) its weakness or funny flaw.\n\nThe profile must include at least three real characteristics of the Freiberger breed.\nDraw a picture of your horse and make a video (at least 30 seconds long) presenting the profile, then send it to the other team.\nYou cannot do any research or preparation for this task until you are in canton Jura.",
     "retry_penalty": 0
   },
   {
     "canton_id": "LU",
     "title": "Lucerne Postcard Challenge",
     "description": "Lucerne is famous for its combination of lake, mountains, and iconic Swiss scenery. Create the perfect Lucerne postcard.",
-    "instructions": "Create a postcard-style photo from three photos of iconic areas within Canton Lucerne.\nYou need to take photos of the following:\n1) A lake;\n2) at least one mountain;\n3) something created by a human\nAfter you take a photo of each of these objects, you must verify that it has a google ratings score of at least 4.5 stars or above.  If it does not, you must find a new object.  You cannot use do research on google beforehand to determine ratings or favourite tourist locations.  Each object must be located at least 1km away from each other.",
+    "instructions": "Create a postcard-style photo from three photos of iconic spots within canton Lucerne. You need one photo of each of the following:\n1) a lake;\n2) at least one mountain;\n3) something made by a human.\n\nAfter taking each photo, verify that the location has a Google rating of at least 4.5 stars. If it does not, find a new one. You cannot research ratings or popular tourist spots on Google beforehand.\nEach location must be at least 1km from the others.",
     "retry_penalty": 0
   },
   {
     "canton_id": "NE",
     "title": "Watch Factory Manager",
-    "description": "Neuchâtel is part of Switzerland’s historic watchmaking region. You must become one with the watch",
-    "instructions": "One team mate claps their hand.  The second team mate must clap their hands as close to 15 seconds after the other team member.  Using a timer, the claps must be within 14.5 seconds to 15.5 seconds of each other.    If you fail, you must wait at least 10 minutes before reattempting",
+    "description": "Neuchâtel is part of Switzerland's historic watchmaking region. Become one with the watch.",
+    "instructions": "One teammate claps once. A second teammate must clap as close as possible to 15 seconds later.\nUsing a timer, the two claps must be between 14.5 and 15.5 seconds apart.\nYou may practise this up to 3 times before your attempt. If you fail, you must wait at least 10 minutes before trying again.",
     "retry_penalty": 10
   },
   {
     "canton_id": "NW",
     "title": "Champion's Podium",
-    "description": "Nidwalden is home to one of Switzerland's greatest skiers, Marco Odermatt.  Create your own championship ceremony wherever you are.",
-    "instructions": "Create your own medal ceremony.\nFind three objects that can represent medal winners.\nAssign:Gold medal\nSilver medal\nBronze medal\n\nThe objects must match the correct medal colours:\nGold = first place\nSilver = second place\nBronze = third place\nEach object must have a reason why it deserves its medal.\nThe challenge is complete when the team can explain:\nwhy each object received its medal;\nwhy the gold medal winner is better than the silver and bronze winners.",
+    "description": "Nidwalden is home to one of Switzerland's greatest skiers, Marco Odermatt. Create your own championship ceremony wherever you are.",
+    "instructions": "Create your own medal ceremony.\nFind three objects to represent the medal winners, matched to the correct colours:\ngold = first place;\nsilver = second place;\nbronze = third place.\n\nEach object must have a reason why it deserves its medal.\nThe challenge is complete when the team can explain:\nwhy each object received its medal;\nwhy the gold winner beats the silver and bronze.\n\nMake a video (30 seconds to 1 minute) explaining why you chose each object for gold, silver, and bronze, and send it to the opposing team.",
     "retry_penalty": 0
   },
   {
     "canton_id": "OW",
     "title": "Lake Sarnen Animal Lover",
-    "description": "Lake Sarnen is home to many animals. Explore the area around the lake and discover the wildlife connected to Obwalden.",
-    "instructions": "Find and photograph five different animals around Lake Sarnen.\nThe animals can include:\nbirds;\ninsects;\nmammals;\nother visible wildlife.\nRules:\nThe animals must be real animals, not pictures, statues, signs, or decorations.\nEach animal must be different.\nThe animals must be found within 10m of the lake (or on the lake of course).\nComplete the challenge by showing five different animal photos.",
+    "description": "Lake Sarnen is home to many animals. Explore its shores and discover the wildlife connected to Obwalden.",
+    "instructions": "Find and photograph five different animals around Lake Sarnen.\nThe animals can include:\nbirds;\ninsects;\nmammals;\nor other visible wildlife.\n\nRules:\nThe animals must be real, not pictures, statues, signs, or decorations.\nEach animal must be different.\nThey must be found within 50m of the lake (or on the lake, of course).\n\nComplete the challenge by showing five different animal photos.",
     "retry_penalty": 0
   },
   {
     "canton_id": "SG",
     "title": "St. Gallen Thing Knower",
     "description": "St. Gallen has a unique history shaped by its abbey, textiles, and traditions. Test your knowledge of the canton with a local trivia challenge.",
-    "instructions": "Travel to a location in St. Gallen and complete a St. Gallen trivia challenge.\nAsk ChatGPT to generate three questions using the following prompt:\n\"Create three multiple choice (A-D) trivia questions about the canton of St. Gallen suitable for a family game. Questions should cover local history, geography, culture, famous people, traditions, landmarks, or unique facts about St. Gallen. The questions should be challenging but solvable by a knowledgeable 12-year-old.\"\nThe team must answer all three questions correctly.\nIf an answer is incorrect, the team must 15 minutes before trying again.",
+    "instructions": "Travel to a location in St. Gallen and complete a local trivia challenge.\nAsk ChatGPT to generate three questions using the following prompt:\n\n\"Create three multiple-choice (A–D) trivia questions about the canton of St. Gallen suitable for a family game. Questions should cover local history, geography, culture, famous people, traditions, landmarks, or unique facts about St. Gallen. The questions should be challenging but solvable by a knowledgeable 12-year-old.\"\n\nThe team must answer all three correctly. If an answer is wrong, the team must wait 15 minutes before trying again.",
     "retry_penalty": 15
   },
   {
     "canton_id": "SH",
     "title": "Munot Messenger",
-    "description": "The Munot Fortress has watched over Schaffhausen for centuries. Send a secret message like a medieval messenger using only symbols.",
-    "instructions": "Create a message that your teammate must decode. One team member creates a message using only emojis. The message must contain at least five emojis, and must form a complete sentence including a noun and a verb.\nThe other team member must guess the exact sentence.\nThe message should represent a warning, announcement, or instruction that could have been sent from the Munot Fortress.\nIf the guess is incorrect the team must wait 15 minutes before trying again.  You cannot coordinate at all beforehand.",
+    "description": "The Munot fortress has watched over Schaffhausen for centuries. Send a secret message like a medieval messenger, using only symbols.",
+    "instructions": "One team member creates a message using only emojis. The message must contain at least five emojis and form a complete sentence, including a noun and a verb. It should represent a warning, announcement, or instruction that could have been sent from the Munot fortress.\nThe other team member must guess the exact sentence.\nYou cannot coordinate at all beforehand. If the guess is wrong, the team must wait 15 minutes before trying again.",
     "retry_penalty": 15
   },
   {
     "canton_id": "SO",
     "title": "The Rule of 11",
     "description": "Solothurn has a famous connection to the number 11. Explore the city and find examples where the number appears.",
-    "instructions": "Find 11 different examples connected to the number 11 in Solothurn.\nThe examples must show the number 11 either:\nwritten as the number \"11\";\nrepresented numerically;\nExamples may include:\nsigns;\nbuildings;\nsymbols;\nobjects;\nhistorical references. Each 11 you find must be at located least 11m meters from other 11's.",
+    "instructions": "Find 11 different examples connected to the number 11 in Solothurn.\nEach example must show the number 11, either written as \"11\" or represented numerically.\nExamples may include:\nsigns;\nbuildings;\nsymbols;\nobjects;\nhistorical references.\n\nEach 11 you find must be located at least 11 metres from the others.",
     "retry_penalty": 0
   },
   {
     "canton_id": "SZ",
     "title": "Morgarten History Reenactment",
     "description": "Schwyz played a central role in the early history of Switzerland. Travel to the site of the Battle of Morgarten and recreate a moment from Swiss history.",
-    "instructions": "Travel to the Morgarten battlefield area in Schwyz.\nAt the location:\nFind a historical marker, monument, or information board connected to the Battle of Morgarten.\nTake a photo of your team reenacting a scene inspired by the battle.\nThe photo must clearly show:the historical location;\nyour team’s reenactment;\na connection to the Battle of Morgarten.\n\nYour team must also explain:\nwho fought in the battle;\nwhy Morgarten is important in Swiss history.",
+    "instructions": "Travel to the Morgarten battlefield area in Schwyz.\nMap: https://maps.app.goo.gl/DqiVqiQbsRpA5aX48\n\nAt the location:\nFind a historical marker, monument, or information board connected to the Battle of Morgarten.\nTake a photo of your team reenacting a scene inspired by the battle.\nThe photo must clearly show:\nthe historical location;\nyour team's reenactment;\na connection to the Battle of Morgarten.\n\nYour team must also explain:\nwho fought in the battle;\nwhy Morgarten is important in Swiss history.",
     "retry_penalty": 0
   },
   {
     "canton_id": "TG",
     "title": "Apple of my eye",
     "description": "Thurgau is known as the \"apple canton\" of Switzerland. Explore its most famous fruit through an observation challenge.",
-    "instructions": "Take a photo of five different apples in Thurgau. The apples cannot be available for purchase.\nThe apples must have visibly different characteristics, such as:\ndifferent colours;\ndifferent sizes;\ndifferent varieties;\ndifferent appearances.\nArrange the apples photo from lightest to darkest and send them to the opposing team.",
+    "instructions": "Take a photo of five different apples in Thurgau. The apples cannot be available for purchase from a supermarket or kiosk.\nThe apples must have visibly different characteristics, such as:\ndifferent colours;\ndifferent sizes;\ndifferent varieties;\ndifferent appearances.\n\nArrange the apples in a photo from lightest to darkest and send it to the opposing team.",
     "retry_penalty": 0
   },
   {
     "canton_id": "TI",
     "title": "Ticino Translation Challenge",
-    "description": "Ticino is Switzerland’s Italian-speaking canton. Test your language skills by translating an Italian sentence across three more languages.",
-    "instructions": "Complete an Italian translation challenge.\nUse the following prompt in ChatGPT to generate one Italian sentence:\n\"Create one medium-difficulty sentence in Italian. The sentence should be suitable for a family language challenge and should include enough vocabulary and grammar to require real translation, but should not use rare words or complex grammar.\"\nThe team must correctly translate the sentence into:\nEnglish\nGerman\nFrench\nThe team must then put their suggestions back into ChatGPT for confimration. You cannot use any other language tools.  If all three are not judged as being correct translations, you must wait 10 minutes before trying again.",
+    "description": "Ticino is Switzerland's Italian-speaking canton. Test your language skills by translating an Italian sentence into three more languages.",
+    "instructions": "Complete an Italian translation challenge.\nUse the following prompt in ChatGPT to generate one Italian sentence:\n\n\"Create one medium-difficulty sentence in Italian. The sentence should be suitable for a family language challenge and should include enough vocabulary and grammar to require real translation, but should not use rare words or complex grammar.\"\n\nThe team must translate the sentence into:\nEnglish;\nGerman;\nFrench.\n\nPut your translations back into ChatGPT for confirmation. You cannot use any other language tools. If all three are not judged correct, you must wait 10 minutes before trying again.",
     "retry_penalty": 10
   },
   {
     "canton_id": "UR",
     "title": "Birthplace of Switzerland",
     "description": "Uri is connected to the founding story of Switzerland. Travel to one of the country's most famous historical locations.",
-    "instructions": "Travel to the Rütli Meadow.\nAt the location take a photo recreating the legendary oath of the Swiss Confederates.",
+    "instructions": "Travel to the Rütli meadow.\nAt the location, take a photo recreating the legendary oath of the Swiss Confederates.",
     "retry_penalty": 0
   },
   {
     "canton_id": "VD",
     "title": "Olympic Challenge",
-    "description": "Lausanne is home to the International Olympic Committee and is known as the Olympic Capital. Test your Olympic knowledge in the city where the modern Olympic movement is managed.",
-    "instructions": "Travel to the International Olympic Committee headquarters or Olympic Museum area in Lausanne.\nComplete an Olympic trivia challenge. Ask ChatGPT to  generate five questions using the following prompt:\n\"Create five family-friendly multiple choice (A-D) trivia questions about the Olympic Games, suitable for a 12-year-old. Questions should include Olympic history, famous athletes, host cities, symbols, traditions, or facts connected to the International Olympic Committee. At least two questions should relate specifically to Lausanne or the IOC.\"\nThe team must answer all five questions correctly. If not all five are correctly answered, you must wait 10 minutes before trying again. You cannot search or use any other tools to answer the questions.",
+    "description": "Lausanne is home to the International Olympic Committee and is known as the Olympic Capital. Test your Olympic knowledge in the city where the modern Olympic movement is run.",
+    "instructions": "Travel to the International Olympic Committee headquarters or the Olympic Museum area in Lausanne.\nComplete an Olympic trivia challenge. Ask ChatGPT to generate five questions using the following prompt:\n\n\"Create five family-friendly multiple-choice (A–D) trivia questions about the Olympic Games, suitable for a 12-year-old. Questions should include Olympic history, famous athletes, host cities, symbols, traditions, or facts connected to the International Olympic Committee. At least two questions should relate specifically to Lausanne or the IOC.\"\n\nThe team must answer all five correctly. If not, you must wait 10 minutes before trying again. You cannot search or use any other tools to answer.",
     "retry_penalty": 0
   },
   {
     "canton_id": "VS",
     "title": "Matterhorn Expedition",
-    "description": "Valais is home to Switzerland's most famous mountain: the Matterhorn. Reach one of the most iconic viewpoints in Switzerland.",
-    "instructions": "Travel to a location in Valais where the Matterhorn is visible.\nComplete the challenge by:\nTaking a photo showing:\nyour team;\nthe Matterhorn;",
+    "description": "Valais is home to Switzerland's most famous mountain, the Matterhorn. Reach one of the most iconic viewpoints in Switzerland.",
+    "instructions": "Travel to a location in Valais where the Matterhorn is visible.\nComplete the challenge by taking a photo showing:\nyour team;\nthe Matterhorn.\n\nSend the photo to the opposing team.",
     "retry_penalty": 0
   },
   {
     "canton_id": "ZG",
     "title": "Cherry I Love you Baby",
     "description": "Zug is famous for its cherries and the iconic Zuger Kirschtorte.",
-    "instructions": "Buy a box of cherries (at least 200g).\nBefore counting, predict how many cherries are in the box. You may not research anything related to cherry weight calculations beforehand.\nCount the actual number of cherries. Your prediction must be within 15% of the actual number of cherries in the box. If you fail, you need to buy a new box and try again.  If you are correct and have predictred within 15% of the total number of cherries, you can complete the challenge by eating the whole box of cherries.",
+    "instructions": "Buy a box of cherries (at least 200g).\nBefore counting, predict how many cherries are in the box. You may not research anything about cherry weights beforehand.\nCount the actual number. Your prediction must be within 15% of the real total. If you are wrong, buy a new box and try again.\nIf you predict within 15%, complete the challenge by eating the whole box of cherries.",
     "retry_penalty": 0
   },
   {
     "canton_id": "ZH",
     "title": "Zürich Transit Master",
-    "description": "Canton Zürich has one of Switzerland’s most extensive public transport networks. Master the canton's many forms of transportation.",
-    "instructions": "Complete a Zürich public transport challenge.\nThe team must travel on four different types of public transport within the canton of Zürich.\nPossible transport types include:\n1) Tram\n2) Bus\n3) Boat\n4) Cog railway\n5) Funicular\n6) Cable car\nFor each transport type you must:\nTravel at least 500 metres.\nTake a photo showing the transport type or vehicle.\nThe challenge is complete when the team has successfully used four different transport types.",
+    "description": "Canton Zürich has one of Switzerland's most extensive public transport networks. Master the canton's many forms of transport.",
+    "instructions": "Complete a Zürich public-transport challenge.\nThe team must travel on four different types of public transport within the canton of Zürich. Possible types include:\n1) tram;\n2) bus;\n3) boat;\n4) cog railway;\n5) funicular;\n6) cable car.\n\nFor each type you use, you must:\ntravel at least 500 metres;\ntake a photo showing the transport type or vehicle.\n\nThe challenge is complete when the team has used four different transport types.",
     "retry_penalty": 0
   }
 ]
