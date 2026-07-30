@@ -261,18 +261,61 @@
       .toolbar { width: 100%; }
       .toolbar > * { flex: 1; }
     }
-  </style>
+  
+
+    .connection-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .connection-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-weight: 700;
+      margin-top: 10px;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #9ca3af;
+    }
+
+    .status-dot.connected { background: #16a34a; }
+    .status-dot.error { background: #dc2626; }
+
+    .busy-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.62);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+
+    @media (max-width: 650px) {
+      .connection-row { grid-template-columns: 1fr; }
+    }
+</style>
 </head>
 <body>
+  <div id="busyOverlay" class="busy-overlay hidden"><div id="busyText">Saving to backend…</div></div>
   <div class="container">
     <header>
       <div>
         <h1>🎛️ Canton Scramble — Game Master</h1>
-        <p class="subtitle">Two-team static prototype. All six private cards are selected at setup; their identities stay hidden from this dashboard.</p>
+        <p class="subtitle">Live two-team dashboard. Actions save directly to the Google Sheets backend.</p>
       </div>
       <div class="toolbar">
         <a class="button-link secondary" href="index.html" target="_blank" rel="noopener">Open Public View</a>
-        <button id="exportButton" type="button">Download game_state.json</button>
+        <button id="exportButton" type="button">Download Public Backup</button>
       </div>
     </header>
 
@@ -281,170 +324,95 @@
 
     <div class="grid">
       <section class="panel span-12">
+        <h2>Backend Connection</h2>
+        <p class="small">Paste the deployed Apps Script web-app URL ending in <strong>/exec</strong>. It is saved only in this browser.</p>
+        <div class="connection-row">
+          <div>
+            <label for="backendUrl">Apps Script web-app URL</label>
+            <input id="backendUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec">
+          </div>
+          <button id="saveBackendUrlButton" class="secondary" type="button">Save URL</button>
+          <button id="testBackendButton" type="button">Test & Load</button>
+        </div>
+        <div class="connection-status"><span id="connectionDot" class="status-dot"></span><span id="connectionText">Not connected</span></div>
+      </section>
+
+      <section class="panel span-12">
         <h2>Game Controls</h2>
         <div class="form-grid">
-          <div>
-            <label for="gameStatus">Game status</label>
-            <select id="gameStatus">
-              <option value="setup">Setup</option>
-              <option value="active">Active</option>
-              <option value="paused">Paused</option>
-              <option value="overnight">Overnight</option>
-              <option value="finished">Finished</option>
-              <option value="testing">Testing</option>
-            </select>
-          </div>
-          <div>
-            <label for="gameDay">Day</label>
-            <select id="gameDay">
-              <option value="1">Day 1</option>
-              <option value="2">Day 2</option>
-            </select>
-          </div>
-          <div>
-            <label for="gameTime">Display time</label>
-            <input id="gameTime" type="time" value="09:00">
-          </div>
-          <div>
-            <label for="boardSize">Public board size</label>
-            <input id="boardSize" type="number" min="1" max="8" value="4">
-          </div>
-          <div>
-            <label for="blueName">Blue team name</label>
-            <input id="blueName" type="text" value="Blue Team">
-          </div>
-          <div>
-            <label for="redName">Red team name</label>
-            <input id="redName" type="text" value="Red Team">
-          </div>
+          <div><label for="gameStatus">Game status</label><select id="gameStatus"><option value="setup">Setup</option><option value="active">Active</option><option value="paused">Paused</option><option value="overnight">Overnight</option><option value="finished">Finished</option><option value="testing">Testing</option></select></div>
+          <div><label for="gameDay">Day</label><select id="gameDay"><option value="1">Day 1</option><option value="2">Day 2</option></select></div>
+          <div><label for="gameTime">Display time</label><input id="gameTime" type="time" value="09:00"></div>
+          <div><label for="boardSize">Public board size</label><input id="boardSize" type="number" min="1" max="8" value="4"></div>
+          <div><label for="blueName">Blue team name</label><input id="blueName" type="text" value="Blue Team"></div>
+          <div><label for="redName">Red team name</label><input id="redName" type="text" value="Red Team"></div>
         </div>
         <div class="action-row">
           <button id="saveMetadataButton" type="button">Save Status & Names</button>
           <button id="newGameButton" class="danger" type="button">Start New Two-Team Game</button>
-          <button id="resetLoadedButton" class="secondary" type="button">Reload GitHub State</button>
+          <button id="reloadBackendButton" class="secondary" type="button">Reload from Backend</button>
           <button id="undoButton" class="secondary" type="button">Undo Last Action</button>
         </div>
       </section>
 
-      <section id="boardPanel" class="panel span-8">
-        <h2>Public Board</h2>
-        <div id="boardStatus" class="small"></div>
-        <div id="publicBoard" class="board"></div>
-      </section>
-
-      <section class="panel span-4">
-        <h2>Scores & Territories</h2>
-        <div id="teamSummary" class="team-grid"></div>
-      </section>
+      <section id="boardPanel" class="panel span-8"><h2>Public Board</h2><div id="boardStatus" class="small"></div><div id="publicBoard" class="board"></div></section>
+      <section class="panel span-4"><h2>Scores & Territories</h2><div id="teamSummary" class="team-grid"></div></section>
 
       <section class="panel span-6">
-        <h2>Record a Claim</h2>
-        <div id="claimLockNotice" class="notice warning hidden"></div>
-
+        <h2>Record a Claim</h2><div id="claimLockNotice" class="notice warning hidden"></div>
         <h3>Public claim</h3>
-        <div class="form-grid">
-          <div>
-            <label for="publicClaimTeam">Claiming team</label>
-            <select id="publicClaimTeam"></select>
-          </div>
-          <div>
-            <label for="publicClaimCanton">Public canton</label>
-            <select id="publicClaimCanton"></select>
-          </div>
-        </div>
-        <div class="action-row">
-          <button id="publicClaimButton" type="button">Confirm Public Claim</button>
-        </div>
-
+        <div class="form-grid"><div><label for="publicClaimTeam">Claiming team</label><select id="publicClaimTeam"></select></div><div><label for="publicClaimCanton">Public canton</label><select id="publicClaimCanton"></select></div></div>
+        <div class="action-row"><button id="publicClaimButton" type="button">Confirm Public Claim</button></div>
         <hr style="border:0;border-top:1px solid #d1d5db;margin:20px 0;">
-
         <h3>Private claim</h3>
-        <p class="small">The claiming team tells the Game Master its anonymous slot (for example, B1 or R2) and reveals the canton only after the challenge has been verified.</p>
-        <div class="form-grid">
-          <div>
-            <label for="privateClaimTeam">Claiming team</label>
-            <select id="privateClaimTeam"></select>
-          </div>
-          <div>
-            <label for="privateClaimSlot">Private card slot</label>
-            <select id="privateClaimSlot"></select>
-          </div>
-          <div>
-            <label for="privateRevealCanton">Revealed canton</label>
-            <select id="privateRevealCanton"></select>
-          </div>
-        </div>
-        <div class="action-row">
-          <button id="privateClaimButton" type="button">Confirm Private Claim</button>
-        </div>
+        <p class="small">The team gives you its anonymous slot and reveals the canton only after challenge verification.</p>
+        <div class="form-grid"><div><label for="privateClaimTeam">Claiming team</label><select id="privateClaimTeam"></select></div><div><label for="privateClaimSlot">Private card slot</label><select id="privateClaimSlot"></select></div><div><label for="privateRevealCanton">Revealed canton</label><select id="privateRevealCanton"></select></div></div>
+        <div class="action-row"><button id="privateClaimButton" type="button">Confirm Private Claim</button></div>
       </section>
 
       <section id="refreshPanel" class="panel span-6 hidden">
-        <h2>Mandatory Board Refresh</h2>
-        <div id="refreshInstructions" class="notice warning"></div>
-        <div id="refreshChoices" class="radio-grid"></div>
-        <div id="vetoControls" class="hidden">
-          <h3>Veto decision</h3>
-          <p id="vetoPrompt"></p>
-          <div class="action-row">
-            <button id="allowRefreshButton" type="button">Allow Removal</button>
-            <button id="vetoRefreshButton" class="danger" type="button">Veto</button>
-          </div>
-        </div>
-        <div class="action-row">
-          <button id="submitRefreshChoiceButton" type="button">Submit Selection</button>
-        </div>
+        <h2>Mandatory Board Refresh</h2><div id="refreshInstructions" class="notice warning"></div><div id="refreshChoices" class="radio-grid"></div>
+        <div id="vetoControls" class="hidden"><h3>Veto decision</h3><p id="vetoPrompt"></p><div class="action-row"><button id="allowRefreshButton" type="button">Allow Removal</button><button id="vetoRefreshButton" class="danger" type="button">Veto</button></div></div>
+        <div class="action-row"><button id="submitRefreshChoiceButton" type="button">Submit Selection</button></div>
       </section>
 
       <section class="panel span-6">
         <h2>Anonymous Private Slots</h2>
-        <p class="small">All three slots for each team are selected when a new game is created. This dashboard shows only slot labels and whether each slot is locked, available, or claimed.</p>
+        <p class="small">All six private assignments are stored in the backend. This dashboard displays only slot labels and their current statuses.</p>
         <div id="privateHands" class="team-grid"></div>
-        <div class="action-row">
-          <button id="exportBluePrivateButton" class="blue" type="button">Download private_blue.json</button>
-          <button id="exportRedPrivateButton" class="red" type="button">Download private_red.json</button>
-        </div>
-        <p class="small" style="margin-top:10px;">Upload both files beside the team pages once before the game. Each team page automatically loads only its own file and unlocks B1/R1, B2/R2, and B3/R3 at the scheduled game times.</p>
+        <div class="action-row"><button id="exportBluePrivateButton" class="blue" type="button">Download Blue Backup</button><button id="exportRedPrivateButton" class="red" type="button">Download Red Backup</button></div>
       </section>
 
-      <section class="panel span-6">
-        <h2>Recent Game Log</h2>
-        <div id="gameLog" class="log"></div>
-      </section>
+      <section class="panel span-6"><h2>Recent Game Log</h2><div id="gameLog" class="log"></div></section>
 
       <section class="panel span-12">
-        <h2>State Tools</h2>
-        <p class="small">The downloaded public state deliberately omits private canton identities. The hidden mappings remain only in this browser's local Game Master save. Download the state after making public changes, then replace <strong>game_state.json</strong> in GitHub.</p>
-        <div class="action-row">
-          <button id="copyJsonButton" class="secondary" type="button">Copy JSON</button>
-          <button id="exportButtonBottom" type="button">Download JSON</button>
-          <button id="clearLocalButton" class="danger" type="button">Clear Browser Save</button>
-        </div>
-        <details style="margin-top:14px;">
-          <summary>View current JSON</summary>
-          <textarea id="jsonPreview" rows="24" readonly></textarea>
-        </details>
+        <h2>Backup Tools</h2>
+        <p class="small">These files are optional backups only. Normal game actions now save directly to Google Sheets.</p>
+        <div class="action-row"><button id="copyJsonButton" class="secondary" type="button">Copy Public JSON</button><button id="exportButtonBottom" type="button">Download Public Backup</button></div>
+        <details style="margin-top:14px;"><summary>View current public JSON</summary><textarea id="jsonPreview" rows="24" readonly></textarea></details>
       </section>
     </div>
   </div>
 
-<script>
-(() => {
+<script>(() => {
   "use strict";
 
-  const STORAGE_KEY = "cantonScrambleGameStateV1";
-  const HISTORY_KEY = "cantonScrambleHistoryV1";
+  const BACKEND_URL_KEY = "cantonScrambleBackendUrlV1";
+  const TEAM_IDS = ["blue", "red"];
 
   let cantons = [];
   let challenges = [];
   let state = null;
-  let loadedState = null;
-  let history = [];
+  let busy = false;
 
   const $ = (id) => document.getElementById(id);
 
   function clone(value) {
     return JSON.parse(JSON.stringify(value));
+  }
+
+  function sleep(ms) {
+    return new Promise(resolve => window.setTimeout(resolve, ms));
   }
 
   function nowTime() {
@@ -455,7 +423,7 @@
     const box = $("messageBox");
     box.textContent = text;
     box.classList.remove("hidden");
-    window.setTimeout(() => box.classList.add("hidden"), 3500);
+    window.setTimeout(() => box.classList.add("hidden"), 4500);
   }
 
   function showError(error) {
@@ -468,11 +436,37 @@
     $("errorBox").classList.add("hidden");
   }
 
+  function setBusy(value, text = "Saving to backend…") {
+    busy = value;
+    $("busyOverlay").classList.toggle("hidden", !value);
+    $("busyText").textContent = text;
+    document.querySelectorAll("button").forEach(button => {
+      button.disabled = value;
+    });
+    if (!value && state) renderAll();
+  }
+
+  function setConnectionStatus(kind, text) {
+    const dot = $("connectionDot");
+    dot.className = "status-dot" + (kind ? ` ${kind}` : "");
+    $("connectionText").textContent = text;
+  }
+
+  function cleanBackendUrl(value) {
+    return String(value || "").trim().replace(/[?#].*$/, "").replace(/\/$/, "");
+  }
+
+  function getBackendUrl() {
+    const url = cleanBackendUrl($("backendUrl").value);
+    if (!url || !/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(url)) {
+      throw new Error("Paste the complete deployed Apps Script web-app URL ending in /exec.");
+    }
+    return url;
+  }
+
   async function fetchJson(path) {
     const response = await fetch(`${path}?v=${Date.now()}`, { cache: "no-store" });
-    if (!response.ok) {
-      throw new Error(`Could not load ${path} (HTTP ${response.status}).`);
-    }
+    if (!response.ok) throw new Error(`Could not load ${path} (HTTP ${response.status}).`);
     try {
       return await response.json();
     } catch (error) {
@@ -480,53 +474,179 @@
     }
   }
 
+  function jsonpRequest(action, params = {}) {
+    const backendUrl = getBackendUrl();
+    return new Promise((resolve, reject) => {
+      const callbackName = `ccCallback_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      const script = document.createElement("script");
+      const timeout = window.setTimeout(() => cleanup(new Error("The backend did not respond in time.")), 15000);
+
+      function cleanup(error, value) {
+        window.clearTimeout(timeout);
+        script.remove();
+        try { delete window[callbackName]; } catch { window[callbackName] = undefined; }
+        if (error) reject(error); else resolve(value);
+      }
+
+      window[callbackName] = data => cleanup(null, data);
+      script.onerror = () => cleanup(new Error("Could not reach the Apps Script backend."));
+
+      const query = new URLSearchParams({
+        action,
+        ...params,
+        prefix: callbackName,
+        _: String(Date.now())
+      });
+      script.src = `${backendUrl}?${query.toString()}`;
+      document.head.appendChild(script);
+    });
+  }
+
+  async function postNoCors(payload) {
+    const backendUrl = getBackendUrl();
+    await fetch(backendUrl, {
+      method: "POST",
+      mode: "no-cors",
+      redirect: "follow",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+  }
+
+  function stateForComparison(value) {
+    const copy = clone(value);
+    delete copy.last_update;
+    return copy;
+  }
+
+  function statesMatch(a, b) {
+    return JSON.stringify(stateForComparison(normalizeState(a))) === JSON.stringify(stateForComparison(normalizeState(b)));
+  }
+
+  async function loadBackendState({ quiet = false } = {}) {
+    const result = await jsonpRequest("gameMasterState");
+    if (!result?.ok) throw new Error(result?.error || "Backend returned an unknown error.");
+    state = normalizeState(result.state);
+    renderAll();
+    setConnectionStatus("connected", `Connected — backend updated ${formatLastUpdate(state.last_update)}`);
+    if (!quiet) showMessage("Reloaded the current game from the backend.");
+    return state;
+  }
+
+  async function saveStateToBackend(reason, expectedState) {
+    const beforeUpdate = state?.last_update || "";
+    await postNoCors({ action: "saveState", reason, state: expectedState });
+
+    for (let attempt = 0; attempt < 12; attempt += 1) {
+      await sleep(attempt === 0 ? 500 : 750);
+      const result = await jsonpRequest("gameMasterState");
+      if (!result?.ok) throw new Error(result?.error || "Backend save failed.");
+      const remote = normalizeState(result.state);
+      if (statesMatch(remote, expectedState) || (remote.last_update && remote.last_update !== beforeUpdate)) {
+        if (!statesMatch(remote, expectedState)) {
+          throw new Error("The backend changed, but its saved state does not match this action. Reload before continuing.");
+        }
+        state = remote;
+        return remote;
+      }
+    }
+    throw new Error("The save could not be verified. Check the Apps Script execution log and reload the backend state.");
+  }
+
+  async function commit(reason, mutator, successMessage) {
+    if (busy) return;
+    const previous = clone(state);
+    try {
+      hideError();
+      setBusy(true);
+      mutator();
+      renderAll();
+      const expected = clone(state);
+      await saveStateToBackend(reason, expected);
+      renderAll();
+      setConnectionStatus("connected", `Connected — backend updated ${formatLastUpdate(state.last_update)}`);
+      if (successMessage) showMessage(successMessage);
+    } catch (error) {
+      state = previous;
+      renderAll();
+      setConnectionStatus("error", "Backend save failed — reload before continuing");
+      showError(error);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function runBackendAction(action, successMessage) {
+    if (busy) return;
+    const previousUpdate = state?.last_update || "";
+    try {
+      hideError();
+      setBusy(true, action === "undo" ? "Undoing last action…" : "Updating backend…");
+      await postNoCors({ action });
+      for (let attempt = 0; attempt < 12; attempt += 1) {
+        await sleep(attempt === 0 ? 500 : 750);
+        const result = await jsonpRequest("gameMasterState");
+        if (!result?.ok) throw new Error(result?.error || "Backend action failed.");
+        const remote = normalizeState(result.state);
+        if (remote.last_update && remote.last_update !== previousUpdate) {
+          state = remote;
+          renderAll();
+          setConnectionStatus("connected", `Connected — backend updated ${formatLastUpdate(state.last_update)}`);
+          showMessage(successMessage);
+          return;
+        }
+      }
+      throw new Error("The backend action could not be verified. There may be no action available to undo.");
+    } catch (error) {
+      setConnectionStatus("error", "Backend action failed — reload before continuing");
+      showError(error);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function formatLastUpdate(value) {
+    if (!value) return "just now";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  }
+
   function normalizeState(raw) {
     const normalized = clone(raw || {});
+    normalized.format_version = Number(normalized.format_version || 2);
     normalized.game_status = normalized.game_status || "setup";
     normalized.day = Number(normalized.day || 1);
     normalized.time = normalized.time || "09:00";
     normalized.public_board = Array.isArray(normalized.public_board) ? normalized.public_board : [];
     normalized.teams = normalized.teams || {};
-    normalized.teams.blue = normalized.teams.blue || {};
-    normalized.teams.red = normalized.teams.red || {};
 
-    for (const teamId of ["blue", "red"]) {
-      const team = normalized.teams[teamId];
+    for (const teamId of TEAM_IDS) {
+      const prefix = teamId === "blue" ? "B" : "R";
+      const team = normalized.teams[teamId] || {};
       team.name = team.name || (teamId === "blue" ? "Blue Team" : "Red Team");
       team.claimed = Array.isArray(team.claimed) ? team.claimed : [];
-
-      const prefix = teamId === "blue" ? "B" : "R";
-      const rawCards = Array.isArray(team.private_cards) ? team.private_cards : [];
-      team.private_cards = rawCards.map((card, index) => {
-        if (typeof card === "string") {
-          return {
-            slot_id: `${prefix}${index + 1}`,
-            canton_id: card,
-            status: "available",
-            reveal_at: privateRevealSchedule(index)
-          };
-        }
-        return {
-          slot_id: card.slot_id || `${prefix}${index + 1}`,
-          canton_id: card.canton_id || null,
-          status: card.status || "available",
-          reveal_at: card.reveal_at || privateRevealSchedule(index)
-        };
-      });
+      const cards = Array.isArray(team.private_cards) ? team.private_cards : [];
+      team.private_cards = cards.map((card, index) => ({
+        slot_id: card.slot_id || `${prefix}${index + 1}`,
+        canton_id: card.canton_id || null,
+        status: card.status || "available",
+        reveal_at: card.reveal_at || privateRevealSchedule(index)
+      }));
+      normalized.teams[teamId] = team;
     }
 
     normalized.claim_log = Array.isArray(normalized.claim_log) ? normalized.claim_log : [];
     normalized.board_locked = Boolean(normalized.board_locked);
-    normalized.refresh = normalized.refresh || {
-      phase: "idle",
-      claiming_team: null,
-      non_claiming_team: null,
-      first_selection: null,
-      vetoed_canton: null
-    };
-    normalized.settings = normalized.settings || { board_size: 4, team_count: 2 };
+    normalized.refresh = normalized.refresh || {};
+    normalized.refresh.phase = normalized.refresh.phase || "idle";
+    normalized.refresh.claiming_team = normalized.refresh.claiming_team || null;
+    normalized.refresh.non_claiming_team = normalized.refresh.non_claiming_team || null;
+    normalized.refresh.first_selection = normalized.refresh.first_selection || null;
+    normalized.refresh.vetoed_canton = normalized.refresh.vetoed_canton || null;
+    normalized.settings = normalized.settings || {};
     normalized.settings.board_size = Number(normalized.settings.board_size || 4);
     normalized.settings.team_count = 2;
+    normalized.last_update = normalized.last_update || "";
     return normalized;
   }
 
@@ -559,90 +679,25 @@
 
   function validateData() {
     if (!Array.isArray(cantons) || cantons.length !== 26) {
-      throw new Error(`cantons.json should contain 26 canton records; found ${Array.isArray(cantons) ? cantons.length : "invalid data"}.`);
+      throw new Error(`cantons.json should contain 26 records; found ${Array.isArray(cantons) ? cantons.length : "invalid data"}.`);
     }
     if (!Array.isArray(challenges) || challenges.length !== 26) {
-      throw new Error(`challenges.json should contain 26 challenge records; found ${Array.isArray(challenges) ? challenges.length : "invalid data"}.`);
+      throw new Error(`challenges.json should contain 26 records; found ${Array.isArray(challenges) ? challenges.length : "invalid data"}.`);
     }
-    const cantonIds = new Set(cantons.map(c => c.canton_id));
-    const challengeIds = new Set(challenges.map(c => c.canton_id));
-    for (const id of cantonIds) {
-      if (!challengeIds.has(id)) throw new Error(`No challenge exists for canton ${id}.`);
-    }
-  }
-
-  function loadHistory() {
-    try {
-      const saved = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
-      history = Array.isArray(saved) ? saved : [];
-    } catch {
-      history = [];
-    }
-  }
-
-  function saveHistory() {
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(-30)));
-  }
-
-  function snapshot() {
-    history.push(clone(state));
-    if (history.length > 30) history.shift();
-    saveHistory();
-  }
-
-  function persist() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    renderAll();
   }
 
   function logAction(team, canton, action, type = "system") {
-    state.claim_log.push({
-      team,
-      canton,
-      time: state.time || nowTime(),
-      action,
-      type
-    });
+    state.claim_log.push({ team, canton, time: state.time || nowTime(), action, type });
   }
 
-  function cantonById(id) {
-    return cantons.find(c => c.canton_id === id);
-  }
-
-  function challengeById(id) {
-    return challenges.find(c => c.canton_id === id);
-  }
-
-  function displayName(id) {
-    return cantonById(id)?.name || id;
-  }
-
-  function teamIds() {
-    return ["blue", "red"];
-  }
-
-  function otherTeam(teamId) {
-    return teamId === "blue" ? "red" : "blue";
-  }
-
-  function allClaimedIds() {
-    return teamIds().flatMap(id => state.teams[id].claimed);
-  }
-
+  function cantonById(id) { return cantons.find(c => c.canton_id === id); }
+  function challengeById(id) { return challenges.find(c => c.canton_id === id); }
+  function displayName(id) { return cantonById(id)?.name || id; }
+  function teamIds() { return TEAM_IDS; }
+  function otherTeam(teamId) { return teamId === "blue" ? "red" : "blue"; }
+  function allClaimedIds() { return teamIds().flatMap(id => state.teams[id].claimed); }
   function allPrivateIds() {
-    return teamIds().flatMap(id =>
-      state.teams[id].private_cards
-        .filter(card => card.canton_id)
-        .map(card => card.canton_id)
-    );
-  }
-
-  function nextPrivateSlotId(teamId) {
-    const prefix = teamId === "blue" ? "B" : "R";
-    const cards = state.teams[teamId].private_cards;
-    let number = 1;
-    while (cards.some(card => card.slot_id === `${prefix}${number}`)) number += 1;
-    return `${prefix}${number}`;
+    return teamIds().flatMap(id => state.teams[id].private_cards.filter(card => card.canton_id).map(card => card.canton_id));
   }
 
   function publicExportState() {
@@ -659,13 +714,6 @@
 
   function privateExportState(teamId) {
     const team = state.teams[teamId];
-    if (!team) throw new Error(`Unknown team: ${teamId}`);
-
-    const missingMappings = team.private_cards.filter(card => !card.canton_id);
-    if (missingMappings.length) {
-      throw new Error(`This browser is missing the hidden identity for ${missingMappings.map(card => card.slot_id).join(", ")}. Use the browser that originally dealt those cards.`);
-    }
-
     return {
       format_version: 2,
       team_id: teamId,
@@ -680,32 +728,14 @@
     };
   }
 
-  function preservePrivateMappings(nextState, currentState) {
-    if (!currentState) return nextState;
-    for (const teamId of teamIds()) {
-      const currentCards = currentState.teams?.[teamId]?.private_cards || [];
-      const mapping = new Map(currentCards.map(card => [card.slot_id, card.canton_id || null]));
-      nextState.teams[teamId].private_cards = nextState.teams[teamId].private_cards.map(card => ({
-        ...card,
-        canton_id: card.canton_id || mapping.get(card.slot_id) || null
-      }));
-    }
-    return nextState;
-  }
-
   function eligibleDrawPool() {
-    const blocked = new Set([
-      ...state.public_board,
-      ...allClaimedIds(),
-      ...allPrivateIds()
-    ]);
+    const blocked = new Set([...state.public_board, ...allClaimedIds(), ...allPrivateIds()]);
     return cantons.map(c => c.canton_id).filter(id => !blocked.has(id));
   }
 
   function drawRandomCanton() {
     const pool = eligibleDrawPool();
-    if (!pool.length) return null;
-    return pool[Math.floor(Math.random() * pool.length)];
+    return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
   }
 
   function calculateScore(claimed) {
@@ -756,7 +786,6 @@
     $("boardStatus").textContent = state.board_locked
       ? "Board locked until the refresh process is completed."
       : `${state.public_board.length} active canton cards.`;
-
     const board = $("publicBoard");
     board.innerHTML = "";
     for (const id of state.public_board) {
@@ -765,11 +794,7 @@
       const card = document.createElement("article");
       card.className = "canton-card";
       if (state.refresh?.vetoed_canton === id) card.classList.add("protected");
-      card.innerHTML = `
-        <div class="canton-id">${id}</div>
-        <h3>${canton?.name || id}</h3>
-        <div class="challenge-title">${challenge?.title || "Challenge missing"}</div>
-      `;
+      card.innerHTML = `<div class="canton-id">${id}</div><h3>${canton?.name || id}</h3><div class="challenge-title">${challenge?.title || "Challenge missing"}</div>`;
       board.appendChild(card);
     }
   }
@@ -782,14 +807,7 @@
       const section = document.createElement("div");
       section.className = `team ${id}`;
       const labels = connectedLabels(team.claimed);
-      section.innerHTML = `
-        <h3>${id === "blue" ? "🔵" : "🔴"} ${team.name}</h3>
-        <div class="score">${calculateScore(team.claimed)} points</div>
-        <div class="small">${team.claimed.length} canton${team.claimed.length === 1 ? "" : "s"} claimed</div>
-        <div class="pill-list">
-          ${labels.length ? labels.map(label => `<span class="pill">${label}</span>`).join("") : '<span class="small">None</span>'}
-        </div>
-      `;
+      section.innerHTML = `<h3>${id === "blue" ? "🔵" : "🔴"} ${team.name}</h3><div class="score">${calculateScore(team.claimed)} points</div><div class="small">${team.claimed.length} canton${team.claimed.length === 1 ? "" : "s"} claimed</div><div class="pill-list">${labels.length ? labels.map(label => `<span class="pill">${label}</span>`).join("") : '<span class="small">None</span>'}</div>`;
       wrapper.appendChild(section);
     }
   }
@@ -798,38 +816,20 @@
     const teams = teamIds().map(id => ({ value: id, label: state.teams[id].name }));
     fillSelect($("publicClaimTeam"), teams);
     fillSelect($("privateClaimTeam"), teams);
-
     const boardOptions = state.public_board.map(id => ({ value: id, label: `${displayName(id)} (${id})` }));
     fillSelect($("publicClaimCanton"), boardOptions, boardOptions.length ? "Choose a public canton" : "No public cards");
     updatePrivateClaimOptions();
-
-    const locked = state.board_locked;
-    $("publicClaimButton").disabled = locked || !state.public_board.length;
-    $("privateClaimButton").disabled = locked;
-    $("claimLockNotice").classList.toggle("hidden", !locked);
-    $("claimLockNotice").textContent = locked ? "The public board is locked. Complete the mandatory refresh before recording another claim." : "";
+    $("claimLockNotice").classList.toggle("hidden", !state.board_locked);
+    $("claimLockNotice").textContent = state.board_locked ? "The public board is locked. Complete the mandatory refresh before recording another claim." : "";
   }
 
   function updatePrivateClaimOptions() {
     const teamId = $("privateClaimTeam").value || "blue";
     const hand = (state.teams[teamId]?.private_cards || []).filter(card => card.status === "available" && isPrivateCardUnlocked(card));
-
-    fillSelect(
-      $("privateClaimSlot"),
-      hand.map(card => ({ value: card.slot_id, label: `${card.slot_id} — available` })),
-      hand.length ? "Choose a private slot" : "No available private cards"
-    );
-
-    const unclaimed = cantons
-      .map(canton => canton.canton_id)
-      .filter(id => !allClaimedIds().includes(id));
-    fillSelect(
-      $("privateRevealCanton"),
-      unclaimed.map(id => ({ value: id, label: `${displayName(id)} (${id})` })),
-      "Choose the revealed canton"
-    );
-
-    $("privateClaimButton").disabled = state.board_locked || !hand.length;
+    fillSelect($("privateClaimSlot"), hand.map(card => ({ value: card.slot_id, label: `${card.slot_id} — available` })), hand.length ? "Choose a private slot" : "No available private cards");
+    const unclaimed = cantons.map(c => c.canton_id).filter(id => !allClaimedIds().includes(id));
+    fillSelect($("privateRevealCanton"), unclaimed.map(id => ({ value: id, label: `${displayName(id)} (${id})` })), "Choose the revealed canton");
+    $("privateClaimButton").disabled = busy || state.board_locked || !hand.length;
   }
 
   function renderPrivateHands() {
@@ -839,52 +839,38 @@
       const team = state.teams[id];
       const section = document.createElement("div");
       section.className = `team ${id}`;
-      section.innerHTML = `
-        <h3>${id === "blue" ? "🔵" : "🔴"} ${team.name}</h3>
-        <div class="pill-list">
-          ${team.private_cards.length
-            ? team.private_cards.map(card => `<span class="pill">${card.slot_id} — ${privateCardDisplayStatus(card)}</span>`).join("")
-            : '<span class="small">No private cards assigned</span>'}
-        </div>
-      `;
+      section.innerHTML = `<h3>${id === "blue" ? "🔵" : "🔴"} ${team.name}</h3><div class="pill-list">${team.private_cards.length ? team.private_cards.map(card => `<span class="pill">${card.slot_id} — ${privateCardDisplayStatus(card)}</span>`).join("") : '<span class="small">No private cards assigned</span>'}</div>`;
       wrapper.appendChild(section);
     }
   }
 
   function renderLog() {
-    const log = $("gameLog");
     const rows = state.claim_log.slice().reverse();
-    if (!rows.length) {
-      log.innerHTML = '<p class="small">No game events recorded yet.</p>';
-      return;
-    }
-    log.innerHTML = rows.map(entry => {
+    $("gameLog").innerHTML = rows.length ? rows.map(entry => {
       const teamName = entry.team && state.teams[entry.team] ? state.teams[entry.team].name : entry.team || "Game Master";
-      const canton = entry.canton ? displayName(entry.canton) : "";
-      const action = entry.action || (entry.canton ? `claimed ${canton}` : "updated the game");
-      return `<div class="log-row"><strong>${entry.time || "--:--"}</strong> — ${teamName}: ${action}</div>`;
-    }).join("");
+      return `<div class="log-row"><strong>${entry.time || "--:--"}</strong> — ${teamName}: ${entry.action || "updated the game"}</div>`;
+    }).join("") : '<p class="small">No game events recorded yet.</p>';
+  }
+
+  function renderRefreshChoiceRadios(ids) {
+    $("refreshChoices").innerHTML = ids.map((id, index) => `<div class="radio-option"><label><input type="radio" name="refreshChoice" value="${id}" ${index === 0 ? "checked" : ""}> ${displayName(id)} (${id})</label></div>`).join("");
   }
 
   function renderRefresh() {
     const refresh = state.refresh || { phase: "idle" };
     const panel = $("refreshPanel");
-    const choices = $("refreshChoices");
     const submitButton = $("submitRefreshChoiceButton");
     const vetoControls = $("vetoControls");
-
     if (!state.board_locked || refresh.phase === "idle") {
       panel.classList.add("hidden");
       return;
     }
-
     panel.classList.remove("hidden");
-    choices.innerHTML = "";
+    $("refreshChoices").innerHTML = "";
     vetoControls.classList.add("hidden");
     submitButton.classList.remove("hidden");
-
     if (refresh.phase === "awaiting_first_selection") {
-      $("refreshInstructions").textContent = `${state.teams[refresh.claiming_team].name} must select one of the four active cards to refresh. ${state.teams[refresh.non_claiming_team].name} may veto this first selection.`;
+      $("refreshInstructions").textContent = `${state.teams[refresh.claiming_team].name} must select one active card to refresh. ${state.teams[refresh.non_claiming_team].name} may veto this first selection.`;
       renderRefreshChoiceRadios(state.public_board);
       submitButton.textContent = "Submit First Selection";
     } else if (refresh.phase === "awaiting_veto") {
@@ -893,23 +879,10 @@
       vetoControls.classList.remove("hidden");
       $("vetoPrompt").textContent = `${state.teams[refresh.claiming_team].name} selected ${displayName(refresh.first_selection)} (${refresh.first_selection}) for removal.`;
     } else if (refresh.phase === "awaiting_second_selection") {
-      $("refreshInstructions").textContent = `${state.teams[refresh.non_claiming_team].name} vetoed ${displayName(refresh.vetoed_canton)}. It is protected for this refresh. ${state.teams[refresh.claiming_team].name} must select a different card; this second selection is final.`;
-      const eligible = state.public_board.filter(id => id !== refresh.vetoed_canton);
-      renderRefreshChoiceRadios(eligible);
+      $("refreshInstructions").textContent = `${state.teams[refresh.non_claiming_team].name} vetoed ${displayName(refresh.vetoed_canton)}. It is protected for this refresh. ${state.teams[refresh.claiming_team].name} must select a different card; this choice is final.`;
+      renderRefreshChoiceRadios(state.public_board.filter(id => id !== refresh.vetoed_canton));
       submitButton.textContent = "Submit Final Selection";
     }
-  }
-
-  function renderRefreshChoiceRadios(ids) {
-    const choices = $("refreshChoices");
-    choices.innerHTML = ids.map((id, index) => `
-      <div class="radio-option">
-        <label>
-          <input type="radio" name="refreshChoice" value="${id}" ${index === 0 ? "checked" : ""}>
-          ${displayName(id)} (${id})
-        </label>
-      </div>
-    `).join("");
   }
 
   function renderJsonPreview() {
@@ -917,7 +890,7 @@
   }
 
   function renderAll() {
-    hideError();
+    if (!state) return;
     renderMetadata();
     renderBoard();
     renderTeamSummary();
@@ -926,287 +899,224 @@
     renderLog();
     renderRefresh();
     renderJsonPreview();
-    $("undoButton").disabled = history.length === 0;
+    $("publicClaimButton").disabled = busy || state.board_locked || !state.public_board.length;
+    $("privateClaimButton").disabled = busy || state.board_locked || !$("privateClaimSlot").value;
+    $("undoButton").disabled = busy;
   }
 
-  function saveMetadata() {
-    snapshot();
-    state.game_status = $("gameStatus").value;
-    state.day = Number($("gameDay").value);
-    state.time = $("gameTime").value || "09:00";
-    state.settings.board_size = Math.max(1, Math.min(8, Number($("boardSize").value || 4)));
-    state.teams.blue.name = $("blueName").value.trim() || "Blue Team";
-    state.teams.red.name = $("redName").value.trim() || "Red Team";
-    persist();
-    showMessage("Game status and team names saved in this browser.");
+  async function saveMetadata() {
+    await commit("Updated status, clock, settings, or team names", () => {
+      state.game_status = $("gameStatus").value;
+      state.day = Number($("gameDay").value);
+      state.time = $("gameTime").value || "09:00";
+      state.settings.board_size = Math.max(1, Math.min(8, Number($("boardSize").value) || 4));
+      state.teams.blue.name = $("blueName").value.trim() || "Blue Team";
+      state.teams.red.name = $("redName").value.trim() || "Red Team";
+      logAction(null, null, "updated the game status, clock, settings, or team names", "metadata");
+    }, "Status, time, and team names saved to the backend.");
   }
 
-  function startNewGame() {
-    if (!window.confirm("Start a completely new two-team game? This replaces the current browser state and preselects all six private cards.")) return;
-    snapshot();
-
-    const boardSize = Math.max(1, Math.min(8, Number($("boardSize").value || 4)));
-    const blueName = $("blueName").value.trim() || "Blue Team";
-    const redName = $("redName").value.trim() || "Red Team";
-
-    state = normalizeState({
-      game_status: "setup",
-      day: 1,
-      time: "09:00",
-      public_board: [],
-      teams: {
-        blue: { name: blueName, claimed: [], private_cards: [] },
-        red: { name: redName, claimed: [], private_cards: [] }
-      },
-      claim_log: [],
-      board_locked: false,
-      refresh: { phase: "idle", claiming_team: null, non_claiming_team: null, first_selection: null, vetoed_canton: null },
-      settings: { board_size: boardSize, team_count: 2 }
-    });
-
-    // Preselect all three private cards for each team before drawing the public board.
-    for (const teamId of teamIds()) {
+  async function startNewGame() {
+    if (!window.confirm("Start a new game? This replaces the current board, claims, log, and all six private assignments.")) return;
+    await commit("Started a new two-team game", () => {
+      const blueName = $("blueName").value.trim() || "Blue Team";
+      const redName = $("redName").value.trim() || "Red Team";
+      const boardSize = Math.max(1, Math.min(8, Number($("boardSize").value) || 4));
+      state = normalizeState({
+        format_version: 2,
+        game_status: "active",
+        day: 1,
+        time: "09:00",
+        public_board: [],
+        teams: {
+          blue: { name: blueName, claimed: [], private_cards: [] },
+          red: { name: redName, claimed: [], private_cards: [] }
+        },
+        claim_log: [],
+        board_locked: false,
+        refresh: { phase: "idle", claiming_team: null, non_claiming_team: null, first_selection: null, vetoed_canton: null },
+        settings: { board_size: boardSize, team_count: 2 }
+      });
       for (let index = 0; index < 3; index += 1) {
+        for (const teamId of teamIds()) {
+          const drawn = drawRandomCanton();
+          if (!drawn) throw new Error("Not enough eligible cantons to assign private cards.");
+          state.teams[teamId].private_cards.push({
+            slot_id: `${teamId === "blue" ? "B" : "R"}${index + 1}`,
+            canton_id: drawn,
+            status: "available",
+            reveal_at: privateRevealSchedule(index)
+          });
+        }
+      }
+      while (state.public_board.length < boardSize) {
         const drawn = drawRandomCanton();
         if (!drawn) break;
-        const prefix = teamId === "blue" ? "B" : "R";
-        state.teams[teamId].private_cards.push({
-          slot_id: `${prefix}${index + 1}`,
-          canton_id: drawn,
-          status: "available",
-          reveal_at: privateRevealSchedule(index)
-        });
+        state.public_board.push(drawn);
       }
-    }
-
-    // Draw the initial public board from the remaining eligible pool.
-    while (state.public_board.length < boardSize) {
-      const drawn = drawRandomCanton();
-      if (!drawn) break;
-      state.public_board.push(drawn);
-    }
-
-    logAction(null, null, "started a new game, preselected six private cards, and dealt the initial public board", "setup");
-    persist();
-    showMessage("New game created. B1/R1 are available now; B2/R2 and B3/R3 will unlock at their scheduled times.");
+      logAction(null, null, "started a new game, preselected six private cards, and dealt the initial public board", "setup");
+    }, "New game created and saved. The public board and all six private cards now live in the backend.");
   }
 
-  function confirmPublicClaim() {
-    if (state.board_locked) {
-      showError("The board is already locked for a refresh.");
-      return;
-    }
+  async function confirmPublicClaim() {
+    if (state.board_locked) return showError("The board is already locked for a refresh.");
     const teamId = $("publicClaimTeam").value;
     const cantonId = $("publicClaimCanton").value;
-    if (!teamId || !cantonId || !state.public_board.includes(cantonId)) {
-      showError("Choose a valid team and active public canton.");
-      return;
-    }
-
-    snapshot();
-    state.teams[teamId].claimed.push(cantonId);
-    state.public_board = state.public_board.filter(id => id !== cantonId);
-    logAction(teamId, cantonId, `claimed ${displayName(cantonId)} from the public board`, "public_claim");
-
-    // Automatic replacement for the claimed public card.
-    const replacement = drawRandomCanton();
-    if (replacement) {
-      state.public_board.push(replacement);
-      logAction(null, replacement, `${displayName(replacement)} was drawn as the automatic replacement`, "board_draw");
-    }
-
-    state.board_locked = true;
-    state.refresh = {
-      phase: "awaiting_first_selection",
-      claiming_team: teamId,
-      non_claiming_team: otherTeam(teamId),
-      first_selection: null,
-      vetoed_canton: null
-    };
-    persist();
-    showMessage(`${displayName(cantonId)} claimed. Complete the mandatory board refresh.`);
+    if (!teamId || !cantonId || !state.public_board.includes(cantonId)) return showError("Choose a valid team and active public canton.");
+    await commit(`Public claim: ${teamId} ${cantonId}`, () => {
+      state.teams[teamId].claimed.push(cantonId);
+      state.public_board = state.public_board.filter(id => id !== cantonId);
+      logAction(teamId, cantonId, `claimed ${displayName(cantonId)} from the public board`, "public_claim");
+      const replacement = drawRandomCanton();
+      if (replacement) {
+        state.public_board.push(replacement);
+        logAction(null, replacement, `${displayName(replacement)} was drawn as the automatic replacement`, "board_draw");
+      }
+      state.board_locked = true;
+      state.refresh = { phase: "awaiting_first_selection", claiming_team: teamId, non_claiming_team: otherTeam(teamId), first_selection: null, vetoed_canton: null };
+    }, `${displayName(cantonId)} claimed. Complete the mandatory board refresh.`);
   }
 
-  function confirmPrivateClaim() {
-    if (state.board_locked) {
-      showError("Complete the board refresh before recording another claim.");
-      return;
-    }
-
+  async function confirmPrivateClaim() {
+    if (state.board_locked) return showError("Complete the board refresh before recording another claim.");
     const teamId = $("privateClaimTeam").value;
     const slotId = $("privateClaimSlot").value;
     const cantonId = $("privateRevealCanton").value;
-    const hand = state.teams[teamId]?.private_cards || [];
-    const card = hand.find(item => item.slot_id === slotId && item.status === "available" && isPrivateCardUnlocked(item));
-
-    if (!teamId || !slotId || !cantonId || !card) {
-      showError("Choose a valid team, currently unlocked private slot, and revealed canton.");
-      return;
-    }
-    if (!card.canton_id) {
-      showError("This browser does not have the hidden identity for that slot. Use the browser that originally dealt the private card.");
-      return;
-    }
-    if (card.canton_id !== cantonId) {
-      showError("The revealed canton does not match that private slot. Check the slot label with the claiming team.");
-      return;
-    }
-    if (allClaimedIds().includes(cantonId)) {
-      showError("That canton has already been claimed.");
-      return;
-    }
-
-    snapshot();
-    card.status = "claimed";
-    state.teams[teamId].claimed.push(cantonId);
-    logAction(teamId, cantonId, `claimed ${displayName(cantonId)} using private card ${slotId}`, "private_claim");
-    persist();
-    showMessage(`${displayName(cantonId)} recorded as a private claim from ${slotId}. The public board did not change.`);
+    const card = (state.teams[teamId]?.private_cards || []).find(item => item.slot_id === slotId && item.status === "available" && isPrivateCardUnlocked(item));
+    if (!teamId || !slotId || !cantonId || !card) return showError("Choose a valid team, unlocked private slot, and revealed canton.");
+    if (card.canton_id !== cantonId) return showError("The revealed canton does not match that private slot.");
+    if (allClaimedIds().includes(cantonId)) return showError("That canton has already been claimed.");
+    await commit(`Private claim: ${teamId} ${slotId}`, () => {
+      card.status = "claimed";
+      state.teams[teamId].claimed.push(cantonId);
+      logAction(teamId, cantonId, `claimed ${displayName(cantonId)} using private card ${slotId}`, "private_claim");
+    }, `${displayName(cantonId)} recorded as a private claim from ${slotId}. The public board did not change.`);
   }
 
   function selectedRefreshChoice() {
     return document.querySelector('input[name="refreshChoice"]:checked')?.value || null;
   }
 
-  function submitRefreshChoice() {
+  async function submitRefreshChoice() {
     const selected = selectedRefreshChoice();
-    if (!selected || !state.public_board.includes(selected)) {
-      showError("Select one active public canton.");
-      return;
-    }
-
-    const refresh = state.refresh;
-    if (refresh.phase === "awaiting_first_selection") {
-      snapshot();
-      refresh.first_selection = selected;
-      refresh.phase = "awaiting_veto";
-      persist();
-    } else if (refresh.phase === "awaiting_second_selection") {
-      if (selected === refresh.vetoed_canton) {
-        showError("The vetoed card is protected. Choose another card.");
-        return;
-      }
-      snapshot();
-      completeRefresh(selected, true);
+    if (!selected || !state.public_board.includes(selected)) return showError("Select one active public canton.");
+    if (state.refresh.phase === "awaiting_first_selection") {
+      await commit("Submitted first refresh selection", () => {
+        state.refresh.first_selection = selected;
+        state.refresh.phase = "awaiting_veto";
+      }, `${displayName(selected)} selected. The other team must allow or veto it.`);
+    } else if (state.refresh.phase === "awaiting_second_selection") {
+      if (selected === state.refresh.vetoed_canton) return showError("The vetoed card is protected. Choose another card.");
+      await completeRefresh(selected, true);
     }
   }
 
-  function allowRefresh() {
+  async function allowRefresh() {
+    const selected = state.refresh.first_selection;
+    if (selected) await completeRefresh(selected, false);
+  }
+
+  async function vetoRefresh() {
     const selected = state.refresh.first_selection;
     if (!selected) return;
-    snapshot();
-    completeRefresh(selected, false);
+    await commit("Vetoed first refresh selection", () => {
+      state.refresh.vetoed_canton = selected;
+      state.refresh.phase = "awaiting_second_selection";
+      logAction(state.refresh.non_claiming_team, selected, `vetoed the removal of ${displayName(selected)}`, "veto");
+    }, `${displayName(selected)} is protected. The claiming team must make a final selection.`);
   }
 
-  function vetoRefresh() {
-    const selected = state.refresh.first_selection;
-    if (!selected) return;
-    snapshot();
-    state.refresh.vetoed_canton = selected;
-    state.refresh.phase = "awaiting_second_selection";
-    logAction(state.refresh.non_claiming_team, selected, `vetoed the removal of ${displayName(selected)}`, "veto");
-    persist();
+  async function completeRefresh(selected, wasVetoed) {
+    await commit("Completed board refresh", () => {
+      const claimingTeam = state.refresh.claiming_team;
+      state.public_board = state.public_board.filter(id => id !== selected);
+      const replacement = drawRandomCanton();
+      if (replacement) state.public_board.push(replacement);
+      logAction(claimingTeam, selected, `${displayName(selected)} was refreshed${wasVetoed ? " after a veto" : ""}${replacement ? `; ${displayName(replacement)} was drawn` : ""}`, "board_refresh");
+      state.board_locked = false;
+      state.refresh = { phase: "idle", claiming_team: null, non_claiming_team: null, first_selection: null, vetoed_canton: null };
+    }, "Board refresh completed. The public board is live again.");
   }
 
-  function completeRefresh(selected, wasVetoed) {
-    const claimingTeam = state.refresh.claiming_team;
-    state.public_board = state.public_board.filter(id => id !== selected);
-
-    // Once removed from the board, the selected card is immediately eligible again.
-    const replacement = drawRandomCanton();
-    if (replacement) state.public_board.push(replacement);
-
-    logAction(
-      claimingTeam,
-      selected,
-      `${displayName(selected)} was refreshed${wasVetoed ? " after a veto" : ""}${replacement ? `; ${displayName(replacement)} was drawn` : ""}`,
-      "board_refresh"
-    );
-
-    state.board_locked = false;
-    state.refresh = {
-      phase: "idle",
-      claiming_team: null,
-      non_claiming_team: null,
-      first_selection: null,
-      vetoed_canton: null
-    };
-    persist();
-    showMessage("Board refresh completed. The public board is live again.");
+  async function undoLastAction() {
+    if (!window.confirm("Undo the last saved backend action?")) return;
+    await runBackendAction("undo", "Last backend action undone.");
   }
 
-  function undoLastAction() {
-    if (!history.length) return;
-    state = normalizeState(history.pop());
-    saveHistory();
-    persist();
-    showMessage("Last action undone.");
-  }
-
-  function reloadLoadedState() {
-    if (!window.confirm("Reload the current GitHub game_state.json? Public changes will be replaced, but hidden private-card mappings from this browser will be preserved where slot labels match.")) return;
-    snapshot();
-    state = preservePrivateMappings(normalizeState(loadedState), state);
-    persist();
-    showMessage("Reloaded the GitHub state and preserved matching hidden private-card mappings.");
-  }
-
-  function exportJson() {
-    const blob = new Blob([JSON.stringify(publicExportState(), null, 2)], { type: "application/json" });
+  function downloadJson(filename, data) {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "game_state.json";
+    link.download = filename;
     document.body.appendChild(link);
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
   }
 
-  function exportPrivateJson(teamId) {
+  function exportPublicJson() { downloadJson("game_state_backup.json", publicExportState()); }
+  function exportPrivateJson(teamId) { downloadJson(`private_${teamId}.json`, privateExportState(teamId)); }
+
+  async function copyJson() {
     try {
-      const privateState = privateExportState(teamId);
-      const blob = new Blob([JSON.stringify(privateState, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `private_${teamId}.json`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
-      showMessage(`${state.teams[teamId].name} private file downloaded.`);
+      await navigator.clipboard.writeText(JSON.stringify(publicExportState(), null, 2));
+      showMessage("Public backup JSON copied to the clipboard.");
+    } catch {
+      $("jsonPreview").focus();
+      $("jsonPreview").select();
+      showError("Clipboard access was blocked. The JSON is selected below for manual copying.");
+    }
+  }
+
+  function saveBackendUrl() {
+    try {
+      const url = getBackendUrl();
+      localStorage.setItem(BACKEND_URL_KEY, url);
+      $("backendUrl").value = url;
+      setConnectionStatus("", "Backend URL saved — test the connection.");
+      showMessage("Backend URL saved in this browser.");
     } catch (error) {
       showError(error);
     }
   }
 
-  async function copyJson() {
-    const text = JSON.stringify(publicExportState(), null, 2);
+  async function testBackendConnection() {
     try {
-      await navigator.clipboard.writeText(text);
-      showMessage("JSON copied to the clipboard.");
-    } catch {
-      $("jsonPreview").focus();
-      $("jsonPreview").select();
-      showError("Clipboard access was blocked. The JSON has been selected below; copy it manually.");
+      hideError();
+      setBusy(true, "Testing backend connection…");
+      const health = await jsonpRequest("health");
+      if (!health?.ok) throw new Error(health?.error || "Health check failed.");
+      localStorage.setItem(BACKEND_URL_KEY, getBackendUrl());
+      await loadBackendState({ quiet: true });
+      showMessage(`Connected to ${health.spreadsheet_name}.`);
+    } catch (error) {
+      setConnectionStatus("error", "Could not connect to the backend");
+      showError(error);
+    } finally {
+      setBusy(false);
     }
   }
 
-  function clearLocalSave() {
-    if (!window.confirm("Clear the Game Master browser save and history?")) return;
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(HISTORY_KEY);
-    history = [];
-    state = normalizeState(loadedState);
-    renderAll();
-    showMessage("Browser save cleared. Reloaded GitHub state.");
+  async function reloadBackend() {
+    try {
+      hideError();
+      setBusy(true, "Loading current backend state…");
+      await loadBackendState();
+    } catch (error) {
+      setConnectionStatus("error", "Could not reload the backend");
+      showError(error);
+    } finally {
+      setBusy(false);
+    }
   }
 
   function bindEvents() {
+    $("saveBackendUrlButton").addEventListener("click", saveBackendUrl);
+    $("testBackendButton").addEventListener("click", testBackendConnection);
+    $("reloadBackendButton").addEventListener("click", reloadBackend);
     $("saveMetadataButton").addEventListener("click", saveMetadata);
     $("newGameButton").addEventListener("click", startNewGame);
-    $("resetLoadedButton").addEventListener("click", reloadLoadedState);
     $("undoButton").addEventListener("click", undoLastAction);
     $("publicClaimButton").addEventListener("click", confirmPublicClaim);
     $("privateClaimButton").addEventListener("click", confirmPrivateClaim);
@@ -1214,10 +1124,9 @@
     $("submitRefreshChoiceButton").addEventListener("click", submitRefreshChoice);
     $("allowRefreshButton").addEventListener("click", allowRefresh);
     $("vetoRefreshButton").addEventListener("click", vetoRefresh);
-    $("exportButton").addEventListener("click", exportJson);
-    $("exportButtonBottom").addEventListener("click", exportJson);
+    $("exportButton").addEventListener("click", exportPublicJson);
+    $("exportButtonBottom").addEventListener("click", exportPublicJson);
     $("copyJsonButton").addEventListener("click", copyJson);
-    $("clearLocalButton").addEventListener("click", clearLocalSave);
     $("exportBluePrivateButton").addEventListener("click", () => exportPrivateJson("blue"));
     $("exportRedPrivateButton").addEventListener("click", () => exportPrivateJson("red"));
   }
@@ -1225,36 +1134,25 @@
   async function initialize() {
     try {
       bindEvents();
-      [cantons, challenges, loadedState] = await Promise.all([
-        fetchJson("cantons.json"),
-        fetchJson("challenges.json"),
-        fetchJson("game_state.json")
-      ]);
+      [cantons, challenges] = await Promise.all([fetchJson("cantons.json"), fetchJson("challenges.json")]);
       validateData();
-      loadedState = normalizeState(loadedState);
-      loadHistory();
-
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        try {
-          state = normalizeState(JSON.parse(saved));
-          showMessage("Loaded the Game Master state saved in this browser.");
-        } catch {
-          state = clone(loadedState);
-          showError("The browser save was invalid, so the GitHub state was loaded instead.");
-        }
-      } else {
-        state = clone(loadedState);
+      const savedUrl = localStorage.getItem(BACKEND_URL_KEY) || "";
+      $("backendUrl").value = savedUrl;
+      if (!savedUrl) {
+        setConnectionStatus("", "Paste the deployed Apps Script URL to connect.");
+        return;
       }
-
-      renderAll();
+      setBusy(true, "Loading backend state…");
+      await loadBackendState({ quiet: true });
+      showMessage("Live Game Master state loaded from the backend.");
     } catch (error) {
       showError(error);
+    } finally {
+      setBusy(false);
     }
   }
 
   initialize();
-})();
-</script>
+})();</script>
 </body>
 </html>
