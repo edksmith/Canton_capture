@@ -2,29 +2,23 @@
   "game_status": "setup",
   "day": 1,
   "time": "09:00",
-
   "public_board": [
     "BE",
     "ZH",
     "AI",
     "ZG"
   ],
-
   "teams": {
     "blue": {
       "name": "Blue Team",
       "claimed": [],
       "private_cards": []
     },
-
     "red": {
       "name": "Red Team",
       "claimed": [],
       "private_cards": []
     }
   },
-
   "claim_log": []
-}
-  ]
 }
