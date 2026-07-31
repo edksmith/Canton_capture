@@ -476,7 +476,7 @@
     <section class="panel">
       <h2>Bonus Tracker</h2>
       <p class="bonus-note">
-        This compares both teams for the provisional bonus categories and shows a running total of claimed population.
+        This compares both teams for the provisional bonus categories and shows the smallest claimed canton as the tie breaker.
       </p>
       <div id="bonusTracker"></div>
     </section>
@@ -851,6 +851,11 @@
       redMetrics.totalArea
     );
 
+    const populationLeader = metricLeader(
+      blueMetrics.totalPopulation,
+      redMetrics.totalPopulation
+    );
+
     const smallestLeader = metricLeader(
       blueMetrics.smallestCanton ? blueMetrics.smallestCanton.population : null,
       redMetrics.smallestCanton ? redMetrics.smallestCanton.population : null,
@@ -883,10 +888,16 @@
             <td>Total claimed population</td>
             <td>${formatPopulation(blueMetrics.totalPopulation)}</td>
             <td>${formatPopulation(redMetrics.totalPopulation)}</td>
-            <td>Running stat only</td>
+            <td>${leaderLabel(populationLeader, blueTeam.name, redTeam.name)}</td>
           </tr>
           <tr>
-            <td>Smallest-population claimed canton</td>
+            <td>Largest connected group</td>
+            <td>${blueMetrics.largestConnectedGroup}</td>
+            <td>${redMetrics.largestConnectedGroup}</td>
+            <td>${leaderLabel(connectedLeader, blueTeam.name, redTeam.name)}</td>
+          </tr>
+          <tr>
+            <td>Tie breaker: smallest claimed canton (population)</td>
             <td>${
               blueMetrics.smallestCanton
                 ? `${blueMetrics.smallestCanton.name} (${formatPopulation(blueMetrics.smallestCanton.population)})`
@@ -898,12 +909,6 @@
                 : "None yet"
             }</td>
             <td>${leaderLabel(smallestLeader, blueTeam.name, redTeam.name)}</td>
-          </tr>
-          <tr>
-            <td>Largest connected group</td>
-            <td>${blueMetrics.largestConnectedGroup}</td>
-            <td>${redMetrics.largestConnectedGroup}</td>
-            <td>${leaderLabel(connectedLeader, blueTeam.name, redTeam.name)}</td>
           </tr>
         </tbody>
       </table>
