@@ -137,6 +137,46 @@
       background: var(--team-soft);
     }
 
+    .bonus-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .bonus-table th,
+    .bonus-table td {
+      border-bottom: 1px solid var(--border);
+      padding: 10px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .bonus-table th {
+      background: #f8fafc;
+    }
+
+    .bonus-leader {
+      font-weight: 800;
+    }
+
+    .bonus-leader.blue {
+      color: #2563eb;
+    }
+
+    .bonus-leader.red {
+      color: #dc2626;
+    }
+
+    .bonus-leader.tie {
+      color: var(--muted);
+    }
+
+    .bonus-note {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-top: 0;
+    }
+
     .summary-label {
       color: var(--muted);
       font-size: 0.9rem;
@@ -434,6 +474,14 @@
     </section>
 
     <section class="panel">
+      <h2>Bonus Tracker</h2>
+      <p class="bonus-note">
+        This compares both teams for the provisional bonus categories and shows a running total of claimed population.
+      </p>
+      <div id="bonusTracker"></div>
+    </section>
+
+    <section class="panel">
       <h2>Your Private Cards</h2>
 
       <p class="small">
@@ -641,6 +689,107 @@
     }, 0);
   }
 
+  function getClaimMetrics(claimed) {
+    const ids = Array.isArray(claimed) ? claimed : [];
+    const cantonRecords = ids
+      .map(id => cantonById(id))
+      .filter(Boolean);
+
+    const totalArea = cantonRecords.reduce(
+      (sum, canton) => sum + Number(canton.area_km2 || 0),
+      0
+    );
+
+    const totalPopulation = cantonRecords.reduce(
+      (sum, canton) => sum + Number(canton.population || 0),
+      0
+    );
+
+    let smallestCanton = null;
+    cantonRecords.forEach(canton => {
+      const population = Number(canton.population || 0);
+      if (!smallestCanton || population < smallestCanton.population) {
+        smallestCanton = {
+          id: canton.canton_id,
+          name: canton.name,
+          population
+        };
+      }
+    });
+
+    const claimedSet = new Set(ids);
+    const visited = new Set();
+    let largestConnectedGroup = 0;
+
+    ids.forEach(startId => {
+      if (visited.has(startId)) {
+        return;
+      }
+
+      let size = 0;
+      const stack = [startId];
+      visited.add(startId);
+
+      while (stack.length) {
+        const currentId = stack.pop();
+        size += 1;
+        const current = cantonById(currentId);
+
+        if (!current || !Array.isArray(current.neighbors)) {
+          continue;
+        }
+
+        current.neighbors.forEach(neighborId => {
+          if (claimedSet.has(neighborId) && !visited.has(neighborId)) {
+            visited.add(neighborId);
+            stack.push(neighborId);
+          }
+        });
+      }
+
+      if (size > largestConnectedGroup) {
+        largestConnectedGroup = size;
+      }
+    });
+
+    return {
+      totalArea,
+      totalPopulation,
+      smallestCanton,
+      largestConnectedGroup
+    };
+  }
+
+  function formatPopulation(value) {
+    return Number(value || 0).toLocaleString("en-CH");
+  }
+
+  function formatArea(value) {
+    return Number(value || 0).toLocaleString("en-CH");
+  }
+
+  function metricLeader(blueValue, redValue, preferSmaller = false) {
+    if (blueValue == null && redValue == null) return "tie";
+    if (blueValue == null) return "red";
+    if (redValue == null) return "blue";
+    if (blueValue === redValue) return "tie";
+    return preferSmaller
+      ? (blueValue < redValue ? "blue" : "red")
+      : (blueValue > redValue ? "blue" : "red");
+  }
+
+  function leaderLabel(leader, blueName, redName) {
+    if (leader === "blue") {
+      return `<span class="bonus-leader blue">${blueName} leads</span>`;
+    }
+
+    if (leader === "red") {
+      return `<span class="bonus-leader red">${redName} leads</span>`;
+    }
+
+    return `<span class="bonus-leader tie">Tied</span>`;
+  }
+
   function revealLabel(card) {
     const reveal = card.reveal_at || {
       day: 1,
@@ -681,6 +830,84 @@
     $("privateCount").textContent = String(cards.length);
     $("claimedCount").textContent = String(claimed.length);
     $("teamScore").textContent = String(calculateScore(claimed));
+  }
+
+  function renderBonusTracker() {
+    const blueTeam = publicState?.teams?.blue || {
+      name: "Blue Team",
+      claimed: []
+    };
+
+    const redTeam = publicState?.teams?.red || {
+      name: "Red Team",
+      claimed: []
+    };
+
+    const blueMetrics = getClaimMetrics(blueTeam.claimed);
+    const redMetrics = getClaimMetrics(redTeam.claimed);
+
+    const areaLeader = metricLeader(
+      blueMetrics.totalArea,
+      redMetrics.totalArea
+    );
+
+    const smallestLeader = metricLeader(
+      blueMetrics.smallestCanton ? blueMetrics.smallestCanton.population : null,
+      redMetrics.smallestCanton ? redMetrics.smallestCanton.population : null,
+      true
+    );
+
+    const connectedLeader = metricLeader(
+      blueMetrics.largestConnectedGroup,
+      redMetrics.largestConnectedGroup
+    );
+
+    $("bonusTracker").innerHTML = `
+      <table class="bonus-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>${blueTeam.name}</th>
+            <th>${redTeam.name}</th>
+            <th>Provisional leader</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Largest total area</td>
+            <td>${formatArea(blueMetrics.totalArea)} km²</td>
+            <td>${formatArea(redMetrics.totalArea)} km²</td>
+            <td>${leaderLabel(areaLeader, blueTeam.name, redTeam.name)}</td>
+          </tr>
+          <tr>
+            <td>Total claimed population</td>
+            <td>${formatPopulation(blueMetrics.totalPopulation)}</td>
+            <td>${formatPopulation(redMetrics.totalPopulation)}</td>
+            <td>Running stat only</td>
+          </tr>
+          <tr>
+            <td>Smallest-population claimed canton</td>
+            <td>${
+              blueMetrics.smallestCanton
+                ? `${blueMetrics.smallestCanton.name} (${formatPopulation(blueMetrics.smallestCanton.population)})`
+                : "None yet"
+            }</td>
+            <td>${
+              redMetrics.smallestCanton
+                ? `${redMetrics.smallestCanton.name} (${formatPopulation(redMetrics.smallestCanton.population)})`
+                : "None yet"
+            }</td>
+            <td>${leaderLabel(smallestLeader, blueTeam.name, redTeam.name)}</td>
+          </tr>
+          <tr>
+            <td>Largest connected group</td>
+            <td>${blueMetrics.largestConnectedGroup}</td>
+            <td>${redMetrics.largestConnectedGroup}</td>
+            <td>${leaderLabel(connectedLeader, blueTeam.name, redTeam.name)}</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
   }
 
   function renderPrivateCards() {
@@ -916,6 +1143,7 @@
   function renderAll() {
     renderHeaderAndStatus();
     renderSummary();
+    renderBonusTracker();
     renderPrivateCards();
     renderPublicBoard();
     renderMap();
