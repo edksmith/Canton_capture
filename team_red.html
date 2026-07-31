@@ -241,11 +241,68 @@
       border-radius: 10px;
       padding: 12px;
       background: white;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .public-card:hover,
+    .public-card:focus {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      outline: 3px solid color-mix(in srgb, var(--team) 30%, transparent);
+      outline-offset: 2px;
     }
 
     .public-card strong {
       display: block;
       margin-bottom: 4px;
+    }
+
+    .public-challenge {
+      margin-top: 16px;
+      border: 1px solid var(--border);
+      border-left: 6px solid var(--team);
+      border-radius: 12px;
+      background: var(--team-soft);
+      padding: 16px;
+    }
+
+    .public-challenge-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .public-challenge-header h3 {
+      margin-bottom: 4px;
+    }
+
+    .public-challenge-canton {
+      color: var(--muted);
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .public-challenge-description {
+      margin-top: 14px;
+    }
+
+    .public-challenge-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .public-challenge .instructions {
+      margin-top: 12px;
+    }
+
+    .retry-penalty {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
     }
 
     .small {
@@ -390,7 +447,31 @@
 
     <section class="panel">
       <h2>Current Public Board</h2>
+      <p class="small">Select a canton to view its challenge.</p>
       <div id="publicBoard" class="public-board"></div>
+
+      <div id="publicChallenge" class="public-challenge hidden" aria-live="polite">
+        <div class="public-challenge-header">
+          <div>
+            <h3 id="publicChallengeTitle">Challenge</h3>
+            <p id="publicChallengeCanton" class="public-challenge-canton"></p>
+          </div>
+          <button id="closePublicChallengeButton" class="secondary" type="button">
+            Close
+          </button>
+        </div>
+
+        <p id="publicChallengeDescription" class="public-challenge-description"></p>
+
+        <div class="public-challenge-actions">
+          <button id="togglePublicInstructionsButton" type="button">
+            Show Instructions
+          </button>
+        </div>
+
+        <div id="publicChallengeInstructions" class="instructions hidden"></div>
+        <p id="publicChallengeRetry" class="retry-penalty"></p>
+      </div>
     </section>
 
     <section class="panel">
@@ -422,6 +503,7 @@
   let teamState = null;
   let refreshInProgress = false;
   let mapLoaded = false;
+  let selectedPublicChallengeId = null;
 
   const $ = id => document.getElementById(id);
 
@@ -714,19 +796,111 @@
       !publicState?.board_locked
     );
 
+    if (
+      selectedPublicChallengeId &&
+      !board.includes(selectedPublicChallengeId)
+    ) {
+      closePublicChallenge();
+    }
+
     if (!board.length) {
       wrapper.innerHTML =
         '<p class="small">No public-board cards have been drawn yet.</p>';
+      closePublicChallenge();
       return;
     }
 
     for (const id of board) {
       const card = document.createElement("div");
       card.className = "public-card";
+      card.tabIndex = 0;
+      card.setAttribute("role", "button");
+      card.setAttribute(
+        "aria-label",
+        `View the public challenge for ${displayName(id)}`
+      );
       card.innerHTML =
         `<strong>${displayName(id)}</strong><span class="small">${id}</span>`;
+
+      const activate = () => openPublicChallenge(id);
+      card.addEventListener("click", activate);
+      card.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          activate();
+        }
+      });
+
       wrapper.appendChild(card);
     }
+  }
+
+  function openPublicChallenge(cantonId) {
+    const board = Array.isArray(publicState?.public_board)
+      ? publicState.public_board
+      : [];
+
+    if (!board.includes(cantonId)) {
+      showError(
+        `${displayName(cantonId)} is no longer on the current public board.`
+      );
+      return;
+    }
+
+    const canton = cantonById(cantonId);
+    const challenge = challengeById(cantonId);
+
+    if (!canton || !challenge) {
+      showError(
+        `The challenge information for ${cantonId} could not be loaded.`
+      );
+      return;
+    }
+
+    hideError();
+    selectedPublicChallengeId = cantonId;
+
+    $("publicChallengeTitle").textContent =
+      challenge.title || "Challenge";
+    $("publicChallengeCanton").textContent =
+      `${canton.name} (${cantonId})`;
+    $("publicChallengeDescription").textContent =
+      challenge.description || "";
+    $("publicChallengeInstructions").textContent =
+      challenge.instructions || "No instructions found.";
+
+    const retryPenalty = challenge.retry_penalty;
+    $("publicChallengeRetry").textContent = retryPenalty
+      ? `Retry penalty: ${retryPenalty}`
+      : "";
+
+    $("publicChallengeInstructions").classList.add("hidden");
+    $("togglePublicInstructionsButton").textContent =
+      "Show Instructions";
+    $("publicChallenge").classList.remove("hidden");
+
+    $("publicChallenge").scrollIntoView({
+      behavior: "smooth",
+      block: "nearest"
+    });
+  }
+
+  function closePublicChallenge() {
+    selectedPublicChallengeId = null;
+    $("publicChallenge").classList.add("hidden");
+    $("publicChallengeInstructions").classList.add("hidden");
+    $("togglePublicInstructionsButton").textContent =
+      "Show Instructions";
+  }
+
+  function togglePublicInstructions() {
+    const instructions = $("publicChallengeInstructions");
+    const willShow = instructions.classList.contains("hidden");
+
+    instructions.classList.toggle("hidden", !willShow);
+    $("togglePublicInstructionsButton").textContent = willShow
+      ? "Hide Instructions"
+      : "Show Instructions";
   }
 
   function hideAllCards() {
@@ -793,6 +967,10 @@
     const status = mapCantonStatus(id);
     $("mapSelection").textContent =
       `${displayName(id)} (${id}) — ${status.label}.`;
+
+    if (publicState?.public_board?.includes(id)) {
+      openPublicChallenge(id);
+    }
   }
 
   function renderMap() {
@@ -886,6 +1064,14 @@
   });
 
   $("hideAllButton").addEventListener("click", hideAllCards);
+  $("closePublicChallengeButton").addEventListener(
+    "click",
+    closePublicChallenge
+  );
+  $("togglePublicInstructionsButton").addEventListener(
+    "click",
+    togglePublicInstructions
+  );
 
   initialize();
 })();
