@@ -126,7 +126,7 @@
 
     .summary-grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 10px;
     }
 
@@ -186,6 +186,21 @@
       font-size: 1.25rem;
       font-weight: 800;
       margin-top: 4px;
+    }
+
+    .score-line {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .provisional-bonus {
+      color: var(--muted);
+      font-size: 0.78em;
+      font-style: italic;
+      font-weight: 700;
+      white-space: nowrap;
     }
 
     .card-grid {
@@ -464,7 +479,18 @@
 
         <div class="summary-item">
           <div class="summary-label">Current score</div>
-          <div id="teamScore" class="summary-value">0</div>
+          <div class="summary-value score-line">
+            <span id="teamScore">0</span>
+            <span id="teamBonusScore" class="provisional-bonus" title="Provisional bonus points">(+0)</span>
+          </div>
+        </div>
+
+        <div class="summary-item">
+          <div class="summary-label">Opponent score</div>
+          <div class="summary-value score-line">
+            <span id="opponentScore">0</span>
+            <span id="opponentBonusScore" class="provisional-bonus" title="Provisional bonus points">(+0)</span>
+          </div>
         </div>
       </div>
 
@@ -790,6 +816,44 @@
     return `<span class="bonus-leader tie">Tied</span>`;
   }
 
+  function calculateProvisionalBonusScores() {
+    const blueClaimed = Array.isArray(publicState?.teams?.blue?.claimed)
+      ? publicState.teams.blue.claimed
+      : [];
+
+    const redClaimed = Array.isArray(publicState?.teams?.red?.claimed)
+      ? publicState.teams.red.claimed
+      : [];
+
+    const blueMetrics = getClaimMetrics(blueClaimed);
+    const redMetrics = getClaimMetrics(redClaimed);
+
+    const leaders = [
+      metricLeader(
+        blueMetrics.largestConnectedGroup,
+        redMetrics.largestConnectedGroup
+      ),
+      metricLeader(
+        blueClaimed.length ? blueMetrics.totalPopulation : null,
+        redClaimed.length ? redMetrics.totalPopulation : null,
+        true
+      ),
+      metricLeader(
+        blueMetrics.totalArea,
+        redMetrics.totalArea
+      )
+    ];
+
+    return leaders.reduce(
+      (scores, leader) => {
+        if (leader === "blue") scores.blue += 3;
+        if (leader === "red") scores.red += 3;
+        return scores;
+      },
+      { blue: 0, red: 0 }
+    );
+  }
+
   function revealLabel(card) {
     const reveal = card.reveal_at || {
       day: 1,
@@ -823,13 +887,38 @@
       ? teamState.cards
       : [];
 
+    const opponentId = TEAM_ID === "blue" ? "red" : "blue";
+
     const claimed = Array.isArray(publicState?.teams?.[TEAM_ID]?.claimed)
       ? publicState.teams[TEAM_ID].claimed
       : [];
 
+    const opponentClaimed = Array.isArray(
+      publicState?.teams?.[opponentId]?.claimed
+    )
+      ? publicState.teams[opponentId].claimed
+      : [];
+
+    const provisionalBonuses = calculateProvisionalBonusScores();
+
     $("privateCount").textContent = String(cards.length);
     $("claimedCount").textContent = String(claimed.length);
+
     $("teamScore").textContent = String(calculateScore(claimed));
+    $("teamBonusScore").textContent =
+      `(+${provisionalBonuses[TEAM_ID]})`;
+
+    $("opponentScore").textContent =
+      String(calculateScore(opponentClaimed));
+    $("opponentBonusScore").textContent =
+      `(+${provisionalBonuses[opponentId]})`;
+
+    const opponentName =
+      publicState?.teams?.[opponentId]?.name ||
+      (opponentId === "blue" ? "Blue Team" : "Red Team");
+
+    $("opponentScore").parentElement.title =
+      `${opponentName}: base score plus provisional bonus points`;
   }
 
   function renderBonusTracker() {
@@ -852,8 +941,8 @@
     );
 
     const totalPopulationLeader = metricLeader(
-      blueMetrics.totalPopulation,
-      redMetrics.totalPopulation,
+      blueTeam.claimed.length ? blueMetrics.totalPopulation : null,
+      redTeam.claimed.length ? redMetrics.totalPopulation : null,
       true
     );
 
