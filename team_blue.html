@@ -476,7 +476,7 @@
     <section class="panel">
       <h2>Bonus Tracker</h2>
       <p class="bonus-note">
-        This compares both teams for the three +3 bonuses: longest continuously connected group, smallest-population claimed canton, and largest total area.
+        This compares both teams for the three +3 bonuses. The final row shows the tie-breaker: the single claimed canton with the lowest population.
       </p>
       <div id="bonusTracker"></div>
     </section>
@@ -700,6 +700,11 @@
       0
     );
 
+    const totalPopulation = cantonRecords.reduce(
+      (sum, canton) => sum + Number(canton.population || 0),
+      0
+    );
+
     let smallestCanton = null;
     cantonRecords.forEach(canton => {
       const population = Number(canton.population || 0);
@@ -749,6 +754,7 @@
 
     return {
       totalArea,
+      totalPopulation,
       smallestCanton,
       largestConnectedGroup
     };
@@ -845,6 +851,12 @@
       redMetrics.totalArea
     );
 
+    const totalPopulationLeader = metricLeader(
+      blueMetrics.totalPopulation,
+      redMetrics.totalPopulation,
+      true
+    );
+
     const smallestLeader = metricLeader(
       blueMetrics.smallestCanton ? blueMetrics.smallestCanton.population : null,
       redMetrics.smallestCanton ? redMetrics.smallestCanton.population : null,
@@ -874,7 +886,19 @@
             <td>${leaderLabel(connectedLeader, blueTeam.name, redTeam.name)}</td>
           </tr>
           <tr>
-            <td>Smallest-population claimed canton (+3 points)</td>
+            <td>Smallest total population across all claimed cantons (+3 points)</td>
+            <td>${formatPopulation(blueMetrics.totalPopulation)}</td>
+            <td>${formatPopulation(redMetrics.totalPopulation)}</td>
+            <td>${leaderLabel(totalPopulationLeader, blueTeam.name, redTeam.name)}</td>
+          </tr>
+          <tr>
+            <td>Largest total area across all claimed cantons (+3 points)</td>
+            <td>${formatArea(blueMetrics.totalArea)} km²</td>
+            <td>${formatArea(redMetrics.totalArea)} km²</td>
+            <td>${leaderLabel(areaLeader, blueTeam.name, redTeam.name)}</td>
+          </tr>
+          <tr>
+            <td>Tie-breaker: single claimed canton with the lowest population</td>
             <td>${
               blueMetrics.smallestCanton
                 ? `${blueMetrics.smallestCanton.name} (${formatPopulation(blueMetrics.smallestCanton.population)})`
@@ -886,12 +910,6 @@
                 : "None yet"
             }</td>
             <td>${leaderLabel(smallestLeader, blueTeam.name, redTeam.name)}</td>
-          </tr>
-          <tr>
-            <td>Largest total area (+3 points)</td>
-            <td>${formatArea(blueMetrics.totalArea)} km²</td>
-            <td>${formatArea(redMetrics.totalArea)} km²</td>
-            <td>${leaderLabel(areaLeader, blueTeam.name, redTeam.name)}</td>
           </tr>
         </tbody>
       </table>
